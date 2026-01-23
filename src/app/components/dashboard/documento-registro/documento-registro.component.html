@@ -1,0 +1,183 @@
+<div class="container mt-4">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <button class="btn btn-success" (click)="nuevoDocumento()">
+      <i class="bi bi-plus-circle me-2"></i> Nuevo Documento
+    </button>
+    <h2 class="text-primary">
+      <i class="bi bi-file-earmark-text me-2"></i> Gestión de Documentos
+    </h2>
+  </div>
+
+  <div class="mb-4">
+    <div class="input-group shadow-sm">
+      <span class="input-group-text bg-primary text-white border-0">
+        <i class="bi bi-search"></i>
+      </span>
+      <input 
+        type="text" 
+        class="form-control border-start-0 ps-0" 
+        placeholder="Buscar por n° oficio, nombre, DNI, delito, situación..." 
+        [(ngModel)]="searchTerm" 
+        (input)="goToPage(1)">
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-md-6 col-lg-4" *ngFor="let doc of paginatedDocumentos; trackBy: trackById">
+      
+      <div class="card shadow-sm h-100 transition-all position-relative"
+           [ngClass]="{
+             'border-danger bg-danger-subtle': !doc.nombresyapellidos && !doc.nombreOficio, 
+             'border-0 hover-shadow': doc.nombresyapellidos || doc.nombreOficio
+           }">
+        
+        <div *ngIf="doc.id === updatingDocId" 
+             class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center rounded"
+             style="background-color: rgba(255, 255, 255, 0.9); z-index: 100; backdrop-filter: blur(4px);">
+          <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Procesando...</span>
+          </div>
+          <h5 class="text-primary fw-bold mb-0">Sincronizando...</h5>
+          <div class="display-1 fw-bold text-dark my-2">{{ countdown }}</div>
+          <small class="text-muted fw-bold">Verificando cambios</small>
+        </div>
+
+        <div class="card-header border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-start"
+             [ngClass]="{
+               'bg-transparent': !doc.nombresyapellidos && !doc.nombreOficio,
+               'bg-white': doc.nombresyapellidos || doc.nombreOficio
+             }">
+          
+          <div class="overflow-hidden">
+            <span class="badge border mb-2"
+                  [ngClass]="(!doc.nombresyapellidos && !doc.nombreOficio) ? 'bg-danger text-white border-danger' : 'bg-light text-dark'">
+              ID: {{ doc.id }}
+            </span>
+
+            <h5 class="mb-0 text-truncate"
+                [ngClass]="(!doc.nombresyapellidos && !doc.nombreOficio) ? 'text-danger fw-bold' : 'text-primary'"
+                title="{{ doc.nombresyapellidos }}">
+              <i class="bi" [ngClass]="(!doc.nombresyapellidos && !doc.nombreOficio) ? 'bi-exclamation-triangle-fill' : 'bi-person-circle'"></i>
+              {{ doc.nombresyapellidos || '⚠️ BORRADOR VACÍO' }}
+            </h5>
+          </div>
+          
+          <div class="dropdown flex-shrink-0">
+            <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+              <li>
+                <button class="dropdown-item" (click)="editarDocumento(doc.id!)">
+                  <i class="bi bi-pencil-square me-2 text-warning"></i> Editar en OnlyOffice
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item" (click)="vistaPrevia(doc)">
+                  <i class="bi bi-eye me-2 text-info"></i> Vista Previa
+                </button>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <button class="dropdown-item text-danger" (click)="eliminarDocumento(doc.id!)">
+                  <i class="bi bi-trash me-2"></i> Eliminar
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card-body pt-2">
+          
+          <div *ngIf="!doc.nombresyapellidos && !doc.nombreOficio" class="text-center py-3 text-danger opacity-75">
+            <p class="mb-0 small">Este documento no tiene datos.</p>
+            <p class="fw-bold">¡Úsalo antes de crear uno nuevo!</p>
+          </div>
+
+          <div *ngIf="doc.nombresyapellidos || doc.nombreOficio" class="d-flex flex-column gap-2 text-muted small">
+            
+            <div class="d-flex align-items-center">
+              <i class="bi bi-card-heading text-primary me-2 fs-6"></i>
+              <span class="fw-bold me-1">DNI:</span> 
+              <span>{{ doc.dni || '---' }}</span>
+            </div>
+
+            <div class="d-flex align-items-center">
+              <i class="bi bi-file-earmark-text text-primary me-2 fs-6"></i>
+              <span class="fw-bold me-1">Oficio:</span> 
+              <span class="text-truncate" title="{{ doc.nombreOficio }}">{{ doc.nombreOficio || '---' }}</span>
+            </div>
+
+            <div class="d-flex align-items-center">
+              <i class="bi bi-building text-primary me-2 fs-6"></i>
+              <span class="fw-bold me-1">Procedencia:</span> 
+              <span class="text-truncate" title="{{ doc.procedencia }}">{{ doc.procedencia || '---' }}</span>
+            </div>
+
+            <div class="d-flex align-items-center">
+              <i class="bi bi-eyedropper text-primary me-2 fs-6"></i>
+              <span class="fw-bold me-1">Muestra:</span> 
+              <span>{{ doc.tipoMuestra || '---' }}</span>
+            </div>
+
+            <div class="d-flex align-items-center mt-1" *ngIf="doc.cuantitativo">
+              <i class="bi bi-speedometer2 text-info me-2 fs-6"></i>
+              <span class="fw-bold me-1">Cuantitativo:</span> 
+              <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-2">
+                {{ doc.cuantitativo }}
+              </span>
+            </div>
+            </div>
+        </div>
+
+        <div class="card-footer border-top-0 pt-0 pb-3"
+             [ngClass]="(!doc.nombresyapellidos && !doc.nombreOficio) ? 'bg-transparent' : 'bg-white'">
+          <div class="d-flex justify-content-between align-items-center">
+            
+            <span *ngIf="doc.nombresyapellidos || doc.nombreOficio" 
+                  class="badge rounded-pill px-3 py-2" 
+                  [ngClass]="{
+                    'bg-success-subtle text-success border border-success': doc.cualitativo === 'POSITIVO',
+                    'bg-danger-subtle text-danger border border-danger': doc.cualitativo === 'NEGATIVO',
+                    'bg-secondary-subtle text-secondary border': !doc.cualitativo
+                  }">
+              <i class="bi" [ngClass]="doc.cualitativo === 'POSITIVO' ? 'bi-check-circle' : (doc.cualitativo === 'NEGATIVO' ? 'bi-x-circle' : 'bi-dash-circle')"></i>
+              {{ doc.cualitativo || 'PENDIENTE' }}
+            </span>
+
+            <span *ngIf="!doc.nombresyapellidos && !doc.nombreOficio"></span>
+
+            <button class="btn btn-sm rounded-pill px-4" 
+                    [ngClass]="(!doc.nombresyapellidos && !doc.nombreOficio) ? 'btn-danger shadow-sm' : 'btn-outline-primary'"
+                    (click)="editarDocumento(doc.id!)">
+              <i class="bi bi-pencil-fill me-1" *ngIf="!doc.nombresyapellidos && !doc.nombreOficio"></i>
+              {{ (!doc.nombresyapellidos && !doc.nombreOficio) ? 'Completar Datos' : 'Editar' }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-center mt-4" *ngIf="filteredDocumentos.length > 0">
+    <nav aria-label="Navegación de documentos">
+      <ul class="pagination">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link" (click)="prevPage()" aria-label="Anterior">
+            <span aria-hidden="true">&laquo;</span>
+          </button>
+        </li>
+        <li class="page-item" *ngFor="let page of getPageNumbers(); trackBy: trackByPage" [class.active]="page === currentPage">
+          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link" (click)="nextPage()" aria-label="Siguiente">
+            <span aria-hidden="true">&raquo;</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>

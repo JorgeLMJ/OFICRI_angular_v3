@@ -1,0 +1,173 @@
+<div class="container-fluid p-0 d-flex flex-column" style="margin: -1.5rem; width: calc(100% + 3rem); height: calc(100vh - 80px); overflow: hidden;">
+  
+  <div class="row g-0 flex-grow-1 h-100">
+    
+    <div class="col-lg-4 col-md-5 bg-white border-end d-flex flex-column shadow-lg position-relative h-100" style="z-index: 10;">
+      
+      <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center flex-shrink-0">
+         <h6 class="mb-0 fw-bold text-primary">
+            <i class="bi bi-pencil-square me-2"></i>{{ editMode ? 'Editar Oficio' : 'Nuevo Oficio' }}
+         </h6>
+      </div>
+
+      <div class="p-4 overflow-y-auto h-100">
+        
+        <form [formGroup]="oficioForm" (ngSubmit)="onSubmit()" novalidate>
+
+          <div class="mb-4">
+            <h6 class="text-secondary fw-bold border-bottom pb-2 mb-3 text-uppercase small">
+              <i class="bi bi-link-45deg me-2"></i>Vinculación
+            </h6>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">INFORME PERICIAL BASE</label>
+              <div class="input-group">
+                <input type="text" class="form-control" [value]="documentoSeleccionadoOficio" placeholder="Seleccione el informe base..." readonly>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#documentoModal">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+              <div *ngIf="oficioForm.get('documentoId')?.invalid && oficioForm.get('documentoId')?.touched" class="text-danger small mt-1">
+                <i class="bi bi-exclamation-circle me-1"></i> Es obligatorio seleccionar un informe.
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="text-secondary fw-bold border-bottom pb-2 mb-3 text-uppercase small">
+              <i class="bi bi-file-text me-2"></i>Detalles del Documento
+            </h6>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">NÚMERO DE OFICIO</label>
+              <input type="text" class="form-control fw-bold" formControlName="nro_oficio" placeholder="Ej: 4603-2025-REG-POL...">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">NÚMERO DE INFORME</label>
+              <input type="text" class="form-control" formControlName="nro_informe" placeholder="Ej: 6232/2025">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">FECHA Y LUGAR</label>
+              <input type="text" class="form-control" formControlName="fecha" placeholder="Ej: Cusco, 26 de agosto del 2025">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="text-secondary fw-bold border-bottom pb-2 mb-3 text-uppercase small">
+              <i class="bi bi-person-badge me-2"></i>Autoridad Solicitante
+            </h6>
+
+            <div class="row g-2 mb-3">
+              <div class="col-4">
+                <label class="form-label small fw-bold text-secondary">GRADO</label>
+                <input type="text" class="form-control" formControlName="gradoPNP" placeholder="Ej: MAYOR">
+              </div>
+              <div class="col-8">
+                <label class="form-label small fw-bold text-secondary">NOMBRES Y APELLIDOS</label>
+                <input type="text" class="form-control" formControlName="nombresyapellidosPNP" placeholder="Nombre completo">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">REFERENCIA</label>
+              <textarea class="form-control" formControlName="referencia" rows="2" placeholder="Documento de referencia..."></textarea>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2 pt-3 border-top pb-5 mb-5">
+            <button type="submit" class="btn btn-primary btn-lg shadow-sm" [disabled]="oficioForm.invalid">
+              <i class="bi bi-save me-2"></i> {{ editMode ? 'Guardar Cambios' : 'Registrar Oficio' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">
+              Cancelar
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-8 col-md-7 h-100 bg-secondary-subtle d-flex flex-column position-relative">
+      
+      <div class="bg-dark text-white p-2 d-flex justify-content-between align-items-center shadow-sm z-1 flex-shrink-0">
+        <div class="small fw-bold"><i class="bi bi-eye me-2"></i>Vista Previa del Informe Base</div>
+        <span class="badge bg-secondary" *ngIf="!documentoSeleccionadoOficio">Ningún informe seleccionado</span>
+        <span class="badge bg-info text-dark" *ngIf="documentoSeleccionadoOficio">{{ documentoSeleccionadoOficio }}</span>
+      </div>
+
+      <div class="flex-grow-1 position-relative overflow-hidden w-100 bg-light d-flex align-items-center justify-content-center">
+        <div id="editor-oficio" class="w-100 h-100"></div>
+
+        <div *ngIf="!hayDocumentoCargado" class="text-center text-muted p-5">
+          <i class="bi bi-file-earmark-pdf display-1 opacity-25 mb-3 d-block"></i>
+          <h5 class="fw-bold">Seleccione un informe</h5>
+          <p class="small">El contenido del informe pericial se visualizará aquí.</p>
+        </div>
+
+        <div *ngIf="cargandoVisor" class="position-absolute top-0 start-0 w-100 h-100 bg-white d-flex flex-column align-items-center justify-content-center" style="z-index: 5; opacity: 0.9;">
+           <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+           <p class="fw-bold text-primary">Cargando visor...</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal fade" id="documentoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white py-2">
+        <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-search me-2"></i>Buscar Informe Pericial</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body bg-light">
+        <div class="input-group mb-3 shadow-sm">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" placeholder="Buscar por N° oficio, nombre o DNI..." [(ngModel)]="terminoBusqueda" (input)="filtrarDocumentos()">
+        </div>
+        <div class="card border-0 shadow-sm">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="bg-light text-uppercase small text-secondary">
+                <tr>
+                  <th class="ps-3">Involucrado</th>
+                  <th>DNI</th>
+                  <th>N° Oficio</th>
+                  <th>Muestra</th>
+                  <th class="text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let doc of paginatedDocumentos">
+                  <td class="ps-3 fw-bold text-dark">{{ doc.nombresyapellidos }}</td>
+                  <td class="text-muted small">{{ doc.dni }}</td>
+                  <td class="text-primary small fw-bold">{{ doc.nombreOficio }}</td>
+                  <td><span class="badge bg-secondary-subtle text-dark border">{{ doc.tipoMuestra }}</span></td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" (click)="seleccionarDocumento(doc)" data-bs-dismiss="modal">
+                      Seleccionar
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <nav *ngIf="documentosFiltrados.length > pageSizeModal" class="d-flex justify-content-between align-items-center mt-3">
+            <small class="text-muted">Página {{ currentPageModal }} de {{ totalPagesModal }}</small>
+            <ul class="pagination pagination-sm mb-0 shadow-sm">
+                <li class="page-item" [class.disabled]="currentPageModal === 1">
+                  <button class="page-link" (click)="prevPageModal()"><i class="bi bi-chevron-left"></i></button>
+                </li>
+                <li class="page-item" [class.disabled]="currentPageModal === totalPagesModal">
+                  <button class="page-link" (click)="nextPageModal()"><i class="bi bi-chevron-right"></i></button>
+                </li>
+            </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

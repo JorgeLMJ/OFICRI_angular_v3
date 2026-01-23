@@ -1,0 +1,144 @@
+<div class="container mt-4">
+  <!-- Encabezado -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+    <h2 class="text-primary">👥 Gestión de Usuarios</h2>
+    <button class="btn btn-success" (click)="nuevoUsuario()">
+      <i class="bi bi-person-plus me-2"></i> Nuevo Usuario
+    </button>
+  </div>
+
+  <!-- 🔎 Buscador -->
+  <div class="mb-3">
+    <input type="text" class="form-control" placeholder="Buscar por nombre, email o rol..."
+           [(ngModel)]="terminoBusqueda" (input)="filtrarUsuarios()">
+  </div>
+
+  <!-- Vista para móviles: tarjetas -->
+  <div class="d-md-none">
+    <div class="card mb-2 shadow-sm" *ngFor="let usuario of usuariosPaginados">
+      <div class="card-body p-3">
+        <h6 class="card-title mb-1">{{ usuario.nombre }}</h6>
+        <p class="text-muted small mb-1">{{ usuario.email }}</p>
+        <span class="badge bg-secondary">{{ usuario.rol }}</span>
+        <div class="mt-2 d-flex gap-2">
+          <button class="btn btn-sm btn-warning" (click)="editarUsuario(usuario)">
+            <i class="bi bi-pencil-square"></i>
+          </button>
+          <button class="btn btn-sm btn-danger" (click)="eliminarUsuario(usuario.id!)">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="usuariosFiltrados.length === 0" class="text-center text-muted py-3">
+      No se encontraron resultados
+    </div>
+  </div>
+
+  <!-- Vista para desktop: tabla -->
+  <div class="table-responsive shadow-sm rounded d-none d-md-block">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-primary">
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let usuario of usuariosPaginados">
+          <td>{{ usuario.id }}</td>
+          <td>{{ usuario.nombre }}</td>
+          <td>{{ usuario.email }}</td>
+          <td><span class="badge bg-secondary">{{ usuario.rol }}</span></td>
+          <td>
+            <button class="btn btn-sm btn-warning me-2" (click)="editarUsuario(usuario)">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="eliminarUsuario(usuario.id!)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="usuariosFiltrados.length === 0">
+          <td colspan="5" class="text-center text-muted py-3">No se encontraron resultados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 📄 Paginación moderna -->
+  <div class="d-flex justify-content-center mt-4">
+    <nav aria-label="Paginación">
+      <ul class="pagination pagination-sm">
+        <li class="page-item" [class.disabled]="paginaActual === 1">
+          <button class="page-link" (click)="paginaAnterior()">Anterior</button>
+        </li>
+
+        <!-- Mostrar hasta 5 páginas centradas -->
+        <ng-container *ngFor="let num of getPaginasVisibles()">
+          <li class="page-item" [class.active]="num === paginaActual">
+            <button class="page-link" (click)="irAPagina(num)">{{ num }}</button>
+          </li>
+        </ng-container>
+
+        <li class="page-item" [class.disabled]="paginaActual === totalPaginas">
+          <button class="page-link" (click)="paginaSiguiente()">Posterior</button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="usuarioModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content shadow">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            {{ usuarioSeleccionado?.id ? '✏️ Editar Usuario' : '➕ Nuevo Usuario' }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="usuarioForm" (ngSubmit)="guardarUsuario()">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="form-control" formControlName="nombre" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" formControlName="email" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Contraseña</label>
+                <input type="password" class="form-control" formControlName="password"
+                       [required]="!usuarioSeleccionado">
+                <small *ngIf="usuarioSeleccionado" class="text-muted">
+                  (Dejar vacío si no deseas cambiarla)
+                </small>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Rol</label>
+                <select class="form-select" formControlName="rol" required>
+                  <option value="Administrador">Administrador</option>
+                  <option value="Auxiliar de Toxicologia">Auxiliar de Toxicologia</option>
+                  <option value="Auxiliar de Dosaje">Auxiliar de Dosaje</option>
+                  <option value="Quimico Farmaceutico">Quimico Farmaceutico</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer mt-3">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary" [disabled]="usuarioForm.invalid">
+                {{ usuarioSeleccionado?.id ? 'Actualizar' : 'Guardar' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

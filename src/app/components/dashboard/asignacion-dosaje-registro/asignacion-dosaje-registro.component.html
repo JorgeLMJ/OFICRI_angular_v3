@@ -1,0 +1,242 @@
+<div class="container-fluid p-0 d-flex flex-column" style="margin: -1.5rem; width: calc(100% + 3rem); height: calc(100vh - 30px);">
+  
+  <div class="row g-0 flex-grow-1 overflow-hidden">
+    
+    <div class="col-lg-4 col-md-5 bg-white border-end d-flex flex-column shadow-lg position-relative" style="z-index: 10;">
+      
+      <div class="p-3 border-bottom bg-light">
+         <h6 class="mb-0 fw-bold text-primary">
+            <i class="bi bi-pencil-square me-2"></i>{{ editMode ? 'Editar Asignación' : 'Registrar Asignación' }}
+         </h6>
+      </div>
+
+      <div class="p-4 overflow-auto flex-grow-1">
+        <form [formGroup]="asignacionForm" (ngSubmit)="onSubmit()" novalidate>
+
+          <div class="mb-4">
+            <h6 class="text-secondary fw-bold border-bottom pb-2 mb-3 text-uppercase small">
+              <i class="bi bi-info-circle me-2"></i>Información General
+            </h6>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">ÁREA</label>
+              <input type="text" class="form-control bg-light" formControlName="area" readonly>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">DOCUMENTO BASE</label>
+              <div class="input-group">
+                <input type="text" class="form-control" [value]="documentoSeleccionadoOficio" placeholder="Seleccione un documento..." readonly>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#documentoModal" [disabled]="!puedeSeleccionarEntidades()">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+              <div *ngIf="asignacionForm.get('documentoId')?.invalid && asignacionForm.get('documentoId')?.touched" class="text-danger small mt-1">
+                Debe seleccionar un documento.
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="text-secondary fw-bold border-bottom pb-2 mb-3 text-uppercase small">
+              <i class="bi bi-person-badge me-2"></i>Personal Responsable
+            </h6>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">QUÍMICO FARMACÉUTICO</label>
+              <div class="input-group">
+                <input type="text" class="form-control" [value]="empleadoSeleccionadoNombre" placeholder="Seleccione un químico..." readonly>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#empleadoModal" [disabled]="!puedeSeleccionarEntidades()">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+              <div *ngIf="asignacionForm.get('empleadoId')?.invalid && asignacionForm.get('empleadoId')?.touched" class="text-danger small mt-1">
+                Debe asignar un responsable.
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="text-secondary fw-bold border-bottom pb-2 mb-3 text-uppercase small">
+              <i class="bi bi-clipboard-data me-2"></i>Análisis
+            </h6>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">RESULTADO CUANTITATIVO</label>
+              <div class="input-group input-group-lg">
+                <input type="number" class="form-control fw-bold text-primary" formControlName="cualitativo" placeholder="0.00" step="0.01" min="0" [readonly]="!puedeEditarResultadoCuantitativo()">
+                <span class="input-group-text bg-light text-muted fw-bold">g/l</span>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary d-block">ESTADO DEL PROCESO</label>
+              
+              <div class="btn-group w-100" role="group" *ngIf="puedeEditarEstadoCampo()">
+                <button type="button" class="btn" 
+                        [ngClass]="asignacionForm.get('estado')?.value === 'EN_PROCESO' ? 'btn-warning text-dark border-warning' : 'btn-outline-secondary'" 
+                        (click)="asignacionForm.patchValue({ estado: 'EN_PROCESO' })">
+                  <i class="bi bi-hourglass-split me-1"></i> En Proceso
+                </button>
+                <button type="button" class="btn" 
+                        [ngClass]="asignacionForm.get('estado')?.value === 'COMPLETADO' ? 'btn-success text-white border-success' : 'btn-outline-secondary'"
+                        (click)="asignacionForm.patchValue({ estado: 'COMPLETADO' })">
+                  <i class="bi bi-check-circle-fill me-1"></i> Completado
+                </button>
+              </div>
+
+              <input type="text" class="form-control mt-2" *ngIf="!puedeEditarEstadoCampo()" [value]="asignacionForm.get('estado')?.value || 'Pendiente'" readonly>
+              <input type="hidden" formControlName="estado">
+            </div>
+          </div>
+
+          <div class="d-grid gap-2 pt-3 border-top">
+            <button type="submit" class="btn btn-primary btn-lg shadow-sm" [disabled]="asignacionForm.invalid">
+              <i class="bi bi-check2-circle me-2"></i> {{ editMode ? 'Guardar Cambios' : 'Registrar Asignación' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">
+              Cancelar
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-8 col-md-7 h-100 bg-secondary-subtle d-flex flex-column position-relative">
+      
+      <div class="bg-dark text-white p-2 d-flex justify-content-between align-items-center shadow-sm z-1">
+        <div class="small fw-bold"><i class="bi bi-eye me-2"></i>Vista Previa del Documento</div>
+        <span class="badge bg-secondary" *ngIf="!documentoSeleccionadoOficio">Ningún documento seleccionado</span>
+        <span class="badge bg-info text-dark" *ngIf="documentoSeleccionadoOficio">{{ documentoSeleccionadoOficio }}</span>
+      </div>
+
+      <div class="flex-grow-1 position-relative overflow-hidden w-100 bg-light d-flex align-items-center justify-content-center">
+        
+        <div id="visor-dosaje" class="w-100 h-100"></div>
+
+        <div *ngIf="!hayDocumentoCargado" class="text-center text-muted p-5">
+          <i class="bi bi-file-earmark-pdf display-1 opacity-25 mb-3 d-block"></i>
+          <h5 class="fw-bold">Seleccione un documento</h5>
+          <p class="small">El contenido del informe se mostrará aquí para su revisión.</p>
+        </div>
+
+        <div *ngIf="cargandoVisor" class="position-absolute top-0 start-0 w-100 h-100 bg-white d-flex flex-column align-items-center justify-content-center" style="z-index: 5; opacity: 0.9;">
+           <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+           <p class="fw-bold text-primary">Cargando visor...</p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal fade" id="documentoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white py-2">
+        <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-search me-2"></i>Seleccionar Informe Pericial</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body bg-light">
+        
+        <div class="input-group mb-3 shadow-sm">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" placeholder="Buscar por oficio, nombre o DNI..." [(ngModel)]="terminoBusqueda" (input)="filtrarDocumentos()">
+        </div>
+
+        <div class="card border-0 shadow-sm">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="bg-light text-uppercase small text-secondary">
+                <tr>
+                  <th class="ps-3">Involucrado</th>
+                  <th>DNI</th>
+                  <th>N° Oficio</th>
+                  <th>Resultado</th>
+                  <th>Estado</th>
+                  <th class="text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let doc of documentosPaginados">
+                  <td class="ps-3 fw-bold text-dark">{{ doc.nombresyapellidos }}</td>
+                  <td class="text-muted small">{{ doc.dni }}</td>
+                  <td class="text-primary small">{{ doc.nombreOficio }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="{'bg-danger-subtle text-danger': doc.cualitativo === 'POSITIVO', 'bg-success-subtle text-success': doc.cualitativo === 'NEGATIVO', 'bg-light text-muted border': !doc.cualitativo}">
+                      {{ doc.cualitativo || 'Pendiente' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge rounded-pill" [ngClass]="isDocumentoAsignado(doc.id!) ? 'bg-warning text-dark' : 'bg-success'">
+                      {{ isDocumentoAsignado(doc.id!) ? 'Asignado' : 'Disponible' }}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <button *ngIf="!isDocumentoAsignado(doc.id!) && puedeSeleccionarEntidades()" type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" (click)="seleccionarDocumento(doc)" data-bs-dismiss="modal">
+                      Seleccionar
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <nav *ngIf="documentosFiltrados.length > itemsPerPage" class="d-flex justify-content-between align-items-center mt-3">
+            <small class="text-muted">Página {{ currentPage }} de {{ totalPages }}</small>
+            <ul class="pagination pagination-sm mb-0 shadow-sm">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <button class="page-link" (click)="cambiarPagina(-1)"><i class="bi bi-chevron-left"></i></button>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                  <button class="page-link" (click)="cambiarPagina(1)"><i class="bi bi-chevron-right"></i></button>
+                </li>
+            </ul>
+        </nav>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="empleadoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white py-2">
+        <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-person-check me-2"></i>Asignar Químico Farmacéutico</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body bg-light">
+        <div class="input-group mb-3 shadow-sm">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" placeholder="Buscar empleado..." [(ngModel)]="terminoBusquedaEmpleado" (input)="filtrarEmpleados()">
+        </div>
+        
+        <div class="card border-0 shadow-sm">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="bg-light text-uppercase small text-secondary">
+                <tr><th class="ps-3">Nombre Completo</th><th>DNI</th><th>Cargo</th><th class="text-center">Acción</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let emp of empleadosFiltrados">
+                  <td class="ps-3 fw-bold">{{ emp.nombre }} {{ emp.apellido }}</td>
+                  <td class="text-muted small">{{ emp.dni }}</td>
+                  <td><span class="badge bg-secondary-subtle text-dark border">{{ emp.cargo }}</span></td>
+                  <td class="text-center">
+                    <button *ngIf="puedeSeleccionarEntidades()" type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" (click)="seleccionarEmpleado(emp)" data-bs-dismiss="modal">
+                      Asignar
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

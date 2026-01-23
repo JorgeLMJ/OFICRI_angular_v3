@@ -1,0 +1,121 @@
+<div class="container-fluid p-4 bg-light min-vh-100">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="text-primary fw-bold mb-0">
+        <i class="bi bi-file-earmark-medical-fill me-2"></i>Gestión de Oficios Dosaje
+      </h2>
+      <p class="text-muted small mb-0">Administración y generación de oficios periciales</p>
+    </div>
+    <button class="btn btn-success shadow-sm px-4" (click)="nuevoOficio()">
+      <i class="bi bi-plus-circle me-2"></i>Nuevo Oficio
+    </button>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-2">
+      <div class="input-group">
+        <span class="input-group-text bg-transparent border-0 text-primary">
+          <i class="bi bi-search fs-5"></i>
+        </span>
+        <input
+          type="text"
+          class="form-control border-0 shadow-none"
+          placeholder="Buscar por N° de oficio, informe o referencia..."
+          [(ngModel)]="searchTerm"
+          (input)="goToPage(1)"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4" *ngIf="filteredOficios.length > 0">
+    <div class="col-12 col-md-6 col-xl-4" *ngFor="let oficio of paginatedOficios; trackBy: trackById">
+      <div class="card h-100 shadow-sm border-0 border-top border-primary border-4 transition-hover">
+        
+        <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-start">
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-3">ID: #{{ oficio.id }}</span>
+          
+          <div class="d-flex gap-1">
+            
+            <button class="btn btn-sm btn-outline-warning" (click)="editarOficio(oficio.id!)" title="Editar datos">
+                <i class="bi bi-pencil-square"></i>
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger" (click)="eliminarOficio(oficio.id!)" title="Eliminar">
+                <i class="bi bi-trash"></i>
+            </button>
+
+            <button class="btn btn-sm btn-primary d-flex align-items-center gap-2 ms-1" 
+                    (click)="abrirOnlyOffice(oficio.documentoId!)" 
+                    [disabled]="!oficio.documentoId"
+                    title="Abrir editor de documento">
+                <i class="bi bi-file-earmark-word-fill"></i>
+                <span>Abrir Documento</span>
+            </button>
+          </div>
+          </div>
+        
+        <div class="card-body">
+          <h6 class="fw-bold text-dark mb-1 text-truncate">{{ oficio.nro_oficio }}</h6>
+          <p class="text-primary small fw-semibold mb-3">
+            <i class="bi bi-hash me-1"></i>Informe: {{ oficio.nro_informe }}
+          </p>
+
+          <div class="d-flex flex-column gap-2 small text-muted">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-calendar-event text-secondary me-2"></i>
+              <span><strong>Fecha:</strong> {{ oficio.fecha }}</span>
+            </div>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-person-badge text-secondary me-2"></i>
+              <span class="text-truncate"><strong>Perito:</strong> {{ oficio.gradoPNP }} {{ oficio.nombresyapellidosPNP }}</span>
+            </div>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-bookmark-fill text-secondary me-2"></i>
+              <span class="text-truncate"><strong>Ref:</strong> {{ oficio.referencia }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center py-5" *ngIf="filteredOficios.length === 0">
+    <i class="bi bi-file-earmark-x display-1 text-muted opacity-25 mb-3"></i>
+    <h4 class="text-muted">No se encontraron registros</h4>
+    <p class="text-muted">Prueba con otros términos de búsqueda.</p>
+  </div>
+
+  <div class="d-flex justify-content-center mt-5" *ngIf="filteredOficios.length > 0">
+    <nav>
+      <ul class="pagination shadow-sm">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link" (click)="prevPage()"><i class="bi bi-chevron-left"></i></button>
+        </li>
+        <li class="page-item" *ngFor="let page of getPageNumbers(); trackBy: trackByPage">
+          <button class="page-link" [class.active]="page === currentPage" (click)="goToPage(page)">
+            {{ page }}
+          </button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link" (click)="nextPage()"><i class="bi bi-chevron-right"></i></button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<div class="modal fade" id="pdfModal" #pdfModal tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-dark text-white py-2">
+        <h5 class="modal-title small"><i class="bi bi-file-pdf me-2"></i>{{ pdfModalTitle }}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0 bg-secondary" style="height: 85vh;">
+        <iframe *ngIf="currentPdfUrl" [src]="currentPdfUrl | safeUrl" width="100%" height="100%" frameborder="0"></iframe>
+      </div>
+    </div>
+  </div>
+</div>

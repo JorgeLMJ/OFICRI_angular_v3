@@ -1,0 +1,28 @@
+<div class="d-flex flex-column h-100 w-100 bg-light" style="min-height: 100vh;">
+
+  <div class="bg-primary text-white p-2 d-flex justify-content-between align-items-center shadow-sm" style="height: 50px;">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-file-earmark-word-fill fs-4 me-2"></i>
+      <span class="fw-bold">Editor de Documentos</span>
+      <span class="mx-2">|</span>
+      <small class="opacity-75" *ngIf="documentoId">ID: {{ documentoId }}</small>
+    </div>
+    
+    <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" (click)="regresar()">
+      <i class="bi bi-arrow-left-circle"></i>
+      <span>Volver a Oficios</span>
+    </button>
+  </div>
+
+  <div class="flex-grow-1 position-relative bg-white">
+    
+    <div *ngIf="isLoading" class="position-absolute top-50 start-50 translate-middle text-center" style="z-index: 20;">
+      <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+      <h5 class="text-secondary fw-bold">Cargando editor...</h5>
+    </div>
+
+    <div id="onlyoffice-container" class="w-100 h-100"></div>
+
+  </div>
+
+</div>
