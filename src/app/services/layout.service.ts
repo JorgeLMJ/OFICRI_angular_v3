@@ -5,22 +5,22 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class LayoutService {
-  // Estado inicial: Menú abierto (true)
+  // Estado inicial: Menú lateral abierto (true)
   private menuOpenSubject = new BehaviorSubject<boolean>(true);
   isMenuOpen$ = this.menuOpenSubject.asObservable();
 
+  // 👇 NUEVO: Estado del Header Superior (Por defecto visible)
+  private headerVisibleSubject = new BehaviorSubject<boolean>(true);
+  headerVisible$ = this.headerVisibleSubject.asObservable();
+
   constructor() {}
 
-  // Métodos para controlar el menú desde cualquier lugar
-  closeMenu() {
-    this.menuOpenSubject.next(false);
-  }
+  // Métodos Sidebar (Ya los tenías)
+  closeMenu() { this.menuOpenSubject.next(false); }
+  openMenu() { this.menuOpenSubject.next(true); }
+  toggleMenu() { this.menuOpenSubject.next(!this.menuOpenSubject.value); }
 
-  openMenu() {
-    this.menuOpenSubject.next(true);
-  }
-
-  toggleMenu() {
-    this.menuOpenSubject.next(!this.menuOpenSubject.value);
-  }
+  // 👇 NUEVOS MÉTODOS PARA EL HEADER
+  hideHeader() { this.headerVisibleSubject.next(false); }
+  showHeader() { this.headerVisibleSubject.next(true); }
 }

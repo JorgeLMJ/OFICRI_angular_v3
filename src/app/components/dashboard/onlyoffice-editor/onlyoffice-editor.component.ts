@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { NgIf } from '@angular/common';
+import { NgIf,CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DocumentoService } from '../../../services/documento.service';
-import { AuthService } from '../../../services/auth.service';
+import { LayoutService } from '../../../services/layout.service'; // 👈 IMPORTANTE
 import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
 
@@ -12,7 +12,7 @@ declare const DocsAPI: any;
   selector: 'app-onlyoffice-editor',
   templateUrl: './onlyoffice-editor.component.html',
   standalone: true,
-
+  imports: [NgIf, CommonModule] // Añadido imports necesarios
 })
 export class OnlyofficeEditorComponent implements OnInit, OnDestroy {
   @ViewChild('editorContainer') editorContainer!: ElementRef;
@@ -23,8 +23,8 @@ export class OnlyofficeEditorComponent implements OnInit, OnDestroy {
   documentoId!: number;
   
   // Banderas de control
-  guardadoExitoso = false; // ¿El usuario pulsó guardar?
-  cargaExitosa = false;    // ¿El documento existía al entrar?
+  guardadoExitoso = false; 
+  cargaExitosa = false;    
   esBorradorVacio = false;
   private routeSub!: Subscription; 
   private scriptCheckInterval: any = null;
@@ -33,10 +33,15 @@ export class OnlyofficeEditorComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router, 
     private documentoService: DocumentoService,
-    private authService: AuthService
+    private layoutService: LayoutService 
   ) {}
 
   ngOnInit(): void {
+    // 👇 OCULTAR HEADER INMEDIATAMENTE
+    setTimeout(() => {
+      this.layoutService.hideHeader();
+    }, 0);
+
     this.routeSub = this.route.paramMap.subscribe(params => {
       const idParam = params.get('id');
       if (idParam) {
@@ -48,41 +53,35 @@ export class OnlyofficeEditorComponent implements OnInit, OnDestroy {
       }
     });
   }
-verificarEstadoInicial(id: number) {
+
+  verificarEstadoInicial(id: number) {
     this.documentoService.getDocumentoById(id).subscribe({
       next: (doc) => {
-        // Si no tiene nombre ni oficio, es un "Borrador Basura" candidato a borrado
         this.esBorradorVacio = !doc.nombresyapellidos && !doc.nombreOficio;
-        
-        // Ahora sí cargamos el editor
         this.documentoId = id;
         this.recargarEditor();
       },
       error: () => {
-        // Si falla la verificación, asumimos que no existe y dejamos que recargarEditor maneje el 404
         this.documentoId = id;
         this.recargarEditor();
       }
     });
   }
+
   recargarEditor() {
-    // A. Limpiar editor previo
     if (this.docEditor) {
       try { this.docEditor.destroyEditor(); } catch (e) { console.warn('Error cleanup', e); }
       this.docEditor = null;
     }
     
-    // B. Resetear estado
     this.configReceived = false;
     this.editorConfig = null;
     this.cargaExitosa = false;
 
     console.log(`📥 Solicitando configuración para Doc ID: ${this.documentoId}`);
     
-    // C. Pedir configuración al backend
     this.documentoService.getEditorConfig(this.documentoId, 'edit').subscribe({
       next: (config: any) => {
-        // 🔹 CONFIGURACIÓN EXTRA: Desactivar Autosave visual en el frontend
         if (config.editorConfig && config.editorConfig.customization) {
             config.editorConfig.customization.autosave = false; 
             config.editorConfig.customization.forcesave = true;
@@ -142,7 +141,7 @@ verificarEstadoInicial(id: number) {
     }
   }
 
-guardarDocumento() {
+  guardarDocumento() {
     if (this.docEditor) {
       this.docEditor.serviceCommand("forcesave");
       this.guardadoExitoso = true;
@@ -156,9 +155,11 @@ guardarDocumento() {
       console.warn('El editor no estaba listo para guardar.');
     }
   }
+
   ngOnDestroy() {
     if (this.docEditor) {
       try { this.docEditor.destroyEditor(); } catch(e) {}
-  }
+    }
+    this.layoutService.showHeader();
   }
 }

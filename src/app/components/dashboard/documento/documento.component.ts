@@ -19,14 +19,12 @@ import Swal from 'sweetalert2';
 export class DocumentoComponent implements OnInit {
   documentos: Documento[] = [];
   searchTerm = '';
-
   currentPage = 1;
   pageSize = 6; 
   maxPagesToShow = 5; 
-  private routerSubscription!: Subscription;
-  
   updatingDocId: number | null = null; 
   countdown: number = 0;
+  private routerSubscription!: Subscription;
 
   constructor(
     private documentoService: DocumentoService,
@@ -41,34 +39,24 @@ export class DocumentoComponent implements OnInit {
     
     this.route.queryParams.subscribe(params => {
       const id = params['updatedId'];
-      if (id) {
-        this.iniciarContadorActualizacion(Number(id));
-      }
+      if (id) this.iniciarContadorActualizacion(Number(id));
     });
 
     this.routerSubscription = this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      this.loadDocumentos();
-    });
+    ).subscribe(() => this.loadDocumentos());
   }
 
   iniciarContadorActualizacion(id: number) {
     this.updatingDocId = id;
     this.countdown = 7; 
-
     const interval = setInterval(() => {
       this.countdown--;
-
       if (this.countdown <= 0) {
         clearInterval(interval);
         this.updatingDocId = null; 
         this.loadDocumentos();     
-        
-        this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: {}
-        });
+        this.router.navigate([], { relativeTo: this.route, queryParams: {} });
       }
     }, 1000); 
   }
@@ -88,7 +76,6 @@ export class DocumentoComponent implements OnInit {
         this.router.navigate(['/dashboard/onlyoffice-editor', nuevoId]);
       },
       error: (err) => {
-        console.error('Error al crear:', err);
         Swal.fire('Error', 'No se pudo crear el documento', 'error');
         this.layoutService.openMenu(); 
       }
@@ -96,7 +83,6 @@ export class DocumentoComponent implements OnInit {
   }
 
   editarDocumento(id: number): void {
-    this.layoutService.closeMenu(); 
     this.router.navigate(['/dashboard/onlyoffice-editor', id]);
   }
 
@@ -104,7 +90,6 @@ export class DocumentoComponent implements OnInit {
     this.documentoService.getDocumentos().subscribe({
       next: (data) => {
         this.documentos = (data || []).sort((a, b) => (b.id || 0) - (a.id || 0));
-        this.currentPage = 1; 
       },
       error: (err) => console.error('Error cargando documentos', err)
     });
@@ -113,7 +98,7 @@ export class DocumentoComponent implements OnInit {
   eliminarDocumento(id: number): void {
     Swal.fire({
       title: '¿Estás seguro?',
-      text: "No podrás revertir esto",
+      text: "Esta acción no se puede deshacer",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -132,10 +117,6 @@ export class DocumentoComponent implements OnInit {
     });
   }
 
-  // ==========================================
-  // 🟢 LÓGICA DE PAGINACIÓN COMPLETA
-  // ==========================================
-
   get filteredDocumentos(): Documento[] {
     const q = this.searchTerm.toLowerCase();
     if (!q) return this.documentos;
@@ -143,9 +124,9 @@ export class DocumentoComponent implements OnInit {
     return this.documentos.filter(doc => 
       (doc.nombresyapellidos?.toLowerCase().includes(q)) ||
       (doc.dni?.includes(q)) ||
-      (doc.nombreDocumento?.toLowerCase().includes(q)) ||
       (doc.nombreOficio?.toLowerCase().includes(q)) ||
-      // 👇 AGREGADO: También busca por valor cuantitativo
+      (doc.tipoMuestra?.toLowerCase().includes(q)) ||
+      (doc.cualitativo?.toLowerCase().includes(q)) ||
       (doc.cuantitativo?.toLowerCase().includes(q))
     );
   }
@@ -161,43 +142,15 @@ export class DocumentoComponent implements OnInit {
 
   getPageNumbers(): number[] {
     const total = this.totalPages;
-    const current = this.currentPage;
-    const max = this.maxPagesToShow;
-
-    let start = Math.max(1, current - Math.floor(max / 2));
-    let end = Math.min(total, start + max - 1);
-
-    if (end - start + 1 < max) {
-      start = Math.max(1, end - max + 1);
-    }
-
     const pages = [];
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
+    for (let i = 1; i <= total; i++) pages.push(i);
     return pages;
   }
 
   prevPage() { if (this.currentPage > 1) this.currentPage--; }
-  
   nextPage() { if (this.currentPage < this.totalPages) this.currentPage++; }
-
   goToPage(page: number) { this.currentPage = page; }
+  trackById(index: number, item: Documento): number { return item.id!; }
+  trackByPage(index: number, page: number): number { return page; }
 
-  trackById(index: number, item: Documento): number {
-    return item.id!;
-  }
-
-  trackByPage(index: number, page: number): number {
-    return page;
-  }
-
-  formatDate(dateString?: string): string {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
-  }
-
-  vistaPrevia(doc: Documento) {
-    console.log('Vista previa para:', doc);
-  }
 }

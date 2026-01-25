@@ -43,7 +43,7 @@
   <main class="flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300 ease-in-out ml-0" 
         [class]="innerWidth >= 992 ? (isMenuOpen ? 'ml-64' : 'ml-0') : 'ml-0'">
 
-    <nav class="bg-blue-700 text-white shadow-sm px-4 py-3 flex items-center justify-between z-40 flex-shrink-0">
+    <nav *ngIf="isHeaderVisible" class="bg-blue-700 text-white shadow-sm px-4 py-3 flex items-center justify-between z-40 flex-shrink-0">
       <button 
         class="text-white p-2 rounded-md hover:bg-blue-600 transition-colors duration-200"
         (click)="toggleMenu()">

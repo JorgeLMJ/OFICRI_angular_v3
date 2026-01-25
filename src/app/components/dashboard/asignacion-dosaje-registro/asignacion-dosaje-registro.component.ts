@@ -256,22 +256,54 @@ export class AsignacionDosajeRegistroComponent implements OnInit, OnDestroy {
     if (this.asignacionForm.valid) {
       const formValue = this.asignacionForm.getRawValue();
       const currentUser = this.authService.getCurrentUser();
+      
       const dto = {
         ...formValue,
         emisorId: currentUser?.empleadoId
       };
 
+      // 1. Guardamos la Asignación en la Base de Datos (SQL)
       const req$ = this.editMode && dto.id
         ? this.dosajeService.actualizar(dto.id, dto)
         : this.dosajeService.crear(dto);
 
       req$.subscribe({
         next: (savedAsignacion) => {
-          this.router.navigate(['/dashboard/asignaciones-dosaje']);
+          console.log('✅ Asignación guardada en BD');
+
+          // 2. LÓGICA PARA ACTUALIZAR EL WORD
+          // Obtenemos el ID del documento y el valor que escribió el usuario
+          const documentoId = formValue.documentoId;
+          const valorCuantitativo = formValue.cualitativo; // Ojo: tu formControl se llama 'cualitativo'
+
+          // Solo intentamos actualizar el Word si hay un documento y un valor numérico ingresado
+          if (documentoId && valorCuantitativo !== null && valorCuantitativo !== '') {
+            
+            console.log(`📝 Actualizando Tag 'CUANTITATIVO' en Word ID: ${documentoId} con valor: ${valorCuantitativo}`);
+
+            this.documentoService.actualizarTagWord(documentoId, 'CUANTITATIVO', valorCuantitativo.toString())
+              .subscribe({
+                next: () => {
+                  console.log('✅ Word actualizado correctamente.');
+                  // Navegamos una vez que todo terminó
+                  this.router.navigate(['/dashboard/asignaciones-dosaje']);
+                },
+                error: (err) => {
+                  console.error('❌ Error al actualizar el Word:', err);
+                  // Navegamos igual, pero podrías mostrar una alerta si prefieres
+                  alert('La asignación se guardó, pero hubo un error actualizando el archivo Word.');
+                  this.router.navigate(['/dashboard/asignaciones-dosaje']);
+                }
+              });
+
+          } else {
+            // Si no había valor para actualizar en el Word, simplemente navegamos
+            this.router.navigate(['/dashboard/asignaciones-dosaje']);
+          }
         },
         error: (err: any) => {
           console.error('Error guardando asignación', err);
-          alert('❌ Error al guardar la asignación.');
+          alert('❌ Error al guardar la asignación en la base de datos.');
         }
       });
     }
@@ -289,4 +321,5 @@ export class AsignacionDosajeRegistroComponent implements OnInit, OnDestroy {
           this.docEditor = null;
       }
   }
+  
 }

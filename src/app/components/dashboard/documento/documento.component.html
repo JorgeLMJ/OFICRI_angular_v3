@@ -1,23 +1,24 @@
-<div class="container mt-4">
-  
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <button class="btn btn-success" (click)="nuevoDocumento()">
+<div class="container mt-4 pb-5">
+  <div class="mb-4 text-start">
+    <h2 class="text-primary mb-1 fw-bold tracking-tight">
+      <i class="bi bi-file-earmark-text-fill me-2"></i> Gestión de Documentos
+    </h2>
+    <p class="text-slate-500 small mb-3">Informes periciales y dosaje etílico</p>
+    
+    <button class="btn btn-success shadow-sm px-4 rounded-pill fw-bold transform transition hover:scale-105 active:scale-95" (click)="nuevoDocumento()">
       <i class="bi bi-plus-circle me-2"></i> Nuevo Documento
     </button>
-    <h2 class="text-primary">
-      <i class="bi bi-file-earmark-text me-2"></i> Gestión de Documentos
-    </h2>
   </div>
 
   <div class="mb-4">
-    <div class="input-group shadow-sm">
-      <span class="input-group-text bg-primary text-white border-0">
-        <i class="bi bi-search"></i>
+    <div class="input-group shadow-sm rounded-pill overflow-hidden border-2 border-slate-100 bg-white focus-within:border-primary transition-all">
+      <span class="input-group-text bg-white border-0 ps-3">
+        <i class="bi bi-search text-primary"></i>
       </span>
       <input 
         type="text" 
-        class="form-control border-start-0 ps-0" 
-        placeholder="Buscar por n° oficio, nombre, DNI, delito, situación..." 
+        class="form-control border-0 shadow-none py-2 text-sm" 
+        placeholder="Buscar involucrado, DNI o número de oficio..." 
         [(ngModel)]="searchTerm" 
         (input)="goToPage(1)">
     </div>
@@ -26,137 +27,92 @@
   <div class="row g-4">
     <div class="col-12 col-md-6 col-lg-4" *ngFor="let doc of paginatedDocumentos; trackBy: trackById">
       
-      <div class="card shadow-sm h-100 transition-all position-relative"
+      <div class="h-full rounded-2xl shadow-sm border border-slate-200 border-l-4 position-relative overflow-hidden transition-all duration-300 hover:shadow-md"
            [ngClass]="{
-             'border-danger bg-danger-subtle': !doc.nombresyapellidos && !doc.nombreOficio, 
-             'border-0 hover-shadow': doc.nombresyapellidos || doc.nombreOficio
+             'border-l-red-600 bg-red-100': !doc.nombresyapellidos && !doc.nombreOficio, 
+             'border-l-blue-600 bg-white': doc.nombresyapellidos || doc.nombreOficio
            }">
         
         <div *ngIf="doc.id === updatingDocId" 
-             class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center rounded"
-             style="background-color: rgba(255, 255, 255, 0.9); z-index: 100; backdrop-filter: blur(4px);">
-          
-          <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
-            <span class="visually-hidden">Procesando...</span>
-          </div>
-          <h5 class="text-primary fw-bold mb-0">Sincronizando...</h5>
-          <div class="display-1 fw-bold text-dark my-2">{{ countdown }}</div>
-          <small class="text-muted fw-bold">Verificando cambios</small>
+             class="position-absolute inset-0 z-50 d-flex flex-column justify-content-center align-items-center backdrop-blur-sm bg-white/90">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <h6 class="text-primary fw-bold tracking-widest small">SINCRONIZANDO</h6>
+          <div class="display-4 fw-bold text-slate-800">{{ countdown }}</div>
         </div>
 
-        <div class="card-header border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-start"
-             [ngClass]="{
-               'bg-transparent': !doc.nombresyapellidos && !doc.nombreOficio,
-               'bg-white': doc.nombresyapellidos || doc.nombreOficio
-             }">
-          
-          <div class="overflow-hidden">
-            <span class="badge border mb-2"
-                  [ngClass]="(!doc.nombresyapellidos && !doc.nombreOficio) ? 'bg-danger text-white border-danger' : 'bg-light text-dark'">
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="px-2 py-1 bg-white text-slate-600 rounded-lg text-xs font-bold border border-slate-200 shadow-sm">
               ID: {{ doc.id }}
             </span>
-
-            <h5 class="mb-0 text-truncate"
-                [ngClass]="(!doc.nombresyapellidos && !doc.nombreOficio) ? 'text-danger fw-bold' : 'text-primary'"
-                title="{{ doc.nombresyapellidos }}">
-              
-              <i class="bi" [ngClass]="(!doc.nombresyapellidos && !doc.nombreOficio) ? 'bi-exclamation-triangle-fill' : 'bi-person-circle'"></i>
-              
-              {{ doc.nombresyapellidos || '⚠️ BORRADOR VACÍO' }}
-            </h5>
-          </div>
-          
-          <div class="dropdown flex-shrink-0">
-            <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-              <li>
-                <button class="dropdown-item" (click)="editarDocumento(doc.id!)">
-                  <i class="bi bi-pencil-square me-2 text-warning"></i> Editar en OnlyOffice
-                </button>
-              </li>
-              <li>
-                <button class="dropdown-item" (click)="vistaPrevia(doc)">
-                  <i class="bi bi-eye me-2 text-info"></i> Vista Previa
-                </button>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <button class="dropdown-item text-danger" (click)="eliminarDocumento(doc.id!)">
-                  <i class="bi bi-trash me-2"></i> Eliminar
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="card-body pt-2">
-          
-          <div *ngIf="!doc.nombresyapellidos && !doc.nombreOficio" class="text-center py-3 text-danger opacity-75">
-            <p class="mb-0 small">Este documento no tiene datos.</p>
-            <p class="fw-bold">¡Úsalo antes de crear uno nuevo!</p>
-          </div>
-
-          <div *ngIf="doc.nombresyapellidos || doc.nombreOficio" class="d-flex flex-column gap-2 text-muted small">
             
-            <div class="d-flex align-items-center">
-              <i class="bi bi-card-heading text-primary me-2 fs-6"></i>
-              <span class="fw-bold me-1">DNI:</span> 
-              <span>{{ doc.dni || '---' }}</span>
-            </div>
-
-            <div class="d-flex align-items-center">
-              <i class="bi bi-file-earmark-text text-primary me-2 fs-6"></i>
-              <span class="fw-bold me-1">Oficio:</span> 
-              <span class="text-truncate" title="{{ doc.nombreOficio }}">{{ doc.nombreOficio || '---' }}</span>
-            </div>
-
-            <div class="d-flex align-items-center">
-              <i class="bi bi-building text-primary me-2 fs-6"></i>
-              <span class="fw-bold me-1">Procedencia:</span> 
-              <span class="text-truncate" title="{{ doc.procedencia }}">{{ doc.procedencia || '---' }}</span>
-            </div>
-
-            <div class="d-flex align-items-center">
-              <i class="bi bi-eyedropper text-primary me-2 fs-6"></i>
-              <span class="fw-bold me-1">Muestra:</span> 
-              <span>{{ doc.tipoMuestra || '---' }}</span>
-            </div>
-
-            <div class="d-flex align-items-center mt-1" *ngIf="doc.cuantitativo">
-               <i class="bi bi-speedometer2 text-info me-2 fs-6"></i>
-               <span class="fw-bold me-1">Cuantitativo:</span> 
-               <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-2">
-                 {{ doc.cuantitativo }}
-               </span>
-             </div>
-             </div>
-        </div>
-
-        <div class="card-footer border-top-0 pt-0 pb-3"
-             [ngClass]="(!doc.nombresyapellidos && !doc.nombreOficio) ? 'bg-transparent' : 'bg-white'">
-          <div class="d-flex justify-content-between align-items-center">
-            
-            <span *ngIf="doc.nombresyapellidos || doc.nombreOficio" 
-                  class="badge rounded-pill px-3 py-2" 
-                  [ngClass]="{
-                    'bg-success-subtle text-success border border-success': doc.cualitativo === 'POSITIVO',
-                    'bg-danger-subtle text-danger border border-danger': doc.cualitativo === 'NEGATIVO',
-                    'bg-secondary-subtle text-secondary border': !doc.cualitativo
-                  }">
-              <i class="bi" [ngClass]="doc.cualitativo === 'POSITIVO' ? 'bi-check-circle' : (doc.cualitativo === 'NEGATIVO' ? 'bi-x-circle' : 'bi-dash-circle')"></i>
-              {{ doc.cualitativo || 'PENDIENTE' }}
-            </span>
-
-            <span *ngIf="!doc.nombresyapellidos && !doc.nombreOficio"></span>
-
-            <button class="btn btn-sm rounded-pill px-4" 
-                    [ngClass]="(!doc.nombresyapellidos && !doc.nombreOficio) ? 'btn-danger shadow-sm' : 'btn-outline-primary'"
-                    (click)="editarDocumento(doc.id!)">
-              <i class="bi bi-pencil-fill me-1" *ngIf="!doc.nombresyapellidos && !doc.nombreOficio"></i>
-              {{ (!doc.nombresyapellidos && !doc.nombreOficio) ? 'Completar Datos' : 'Editar' }}
+            <button class="btn btn-sm border-2 d-flex align-items-center gap-2 px-3 py-1.5 transition-all duration-300 shadow-sm rounded-xl bg-cyan-100 border-cyan-300 text-cyan-700 hover:bg-cyan-600 hover:border-cyan-600 hover:text-white group" 
+                    (click)="editarDocumento(doc.id!)" 
+                    title="Abrir en OnlyOffice">
+              <i class="bi bi-file-earmark-word-fill fs-6"></i>
+              <span class="fw-bold tracking-tight" style="font-size: 0.7rem;">ABRIR EDITOR</span>
             </button>
+          </div>
+
+          <h5 class="fw-bold mb-2 text-slate-800 line-clamp-1 fs-6" [ngClass]="{'text-red-800': !doc.nombresyapellidos}">
+            {{ doc.nombresyapellidos || '⚠️ BORRADOR SIN DATOS' }}
+          </h5>
+
+          <div class="space-y-1.5 border-t border-slate-200 pt-2" [ngClass]="{'border-red-200': !doc.nombresyapellidos}">
+            <div class="d-flex align-items-center">
+              <div class="w-7 h-7 rounded-lg bg-white d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
+                <i class="bi bi-card-heading small" [ngClass]="(!doc.nombresyapellidos) ? 'text-red-600' : 'text-blue-600'"></i>
+              </div>
+              <div>
+                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;" [ngClass]="{'text-red-500': !doc.nombresyapellidos}">DNI</p>
+                <p class="fw-semibold text-slate-700 mb-0 small lh-1">{{ doc.dni || '---' }}</p>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center">
+              <div class="w-7 h-7 rounded-lg bg-white d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
+                <i class="bi bi-envelope-paper small" [ngClass]="(!doc.nombresyapellidos) ? 'text-red-600' : 'text-blue-600'"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;" [ngClass]="{'text-red-500': !doc.nombresyapellidos}">Número de Oficio</p>
+                <p class="fw-semibold text-slate-700 mb-0 small text-truncate lh-1">{{ doc.nombreOficio || '---' }}</p>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center">
+              <div class="w-7 h-7 rounded-lg bg-white d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
+                <i class="bi bi-vial small" [ngClass]="(!doc.nombresyapellidos) ? 'text-red-600' : 'text-blue-600'"></i>
+              </div>
+              <div>
+                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;" [ngClass]="{'text-red-500': !doc.nombresyapellidos}">Tipo de Muestra</p>
+                <p class="fw-semibold text-slate-700 mb-0 small lh-1">{{ doc.tipoMuestra || '---' }}</p>
+              </div>
+            </div>
+            
+            <div class="d-flex align-items-center pt-1">
+              <div class="w-7 h-7 rounded-lg bg-white text-slate-500 d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
+                <i class="bi bi-shield-check small"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;" [ngClass]="{'text-red-500': !doc.nombresyapellidos}">Resultado Cualitativo</p>
+                <span class="badge rounded-lg fw-bold shadow-xs py-1" style="width: fit-content; font-size: 0.65rem;"
+                      [ngClass]="{
+                        'bg-emerald-600 text-white': doc.cualitativo === 'POSITIVO',
+                        'bg-rose-600 text-white': doc.cualitativo === 'NEGATIVO',
+                        'bg-slate-400 text-white': !doc.cualitativo
+                      }">
+                  {{ doc.cualitativo || 'PENDIENTE' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-2 p-2 bg-blue-50 rounded-xl border border-blue-100 d-flex align-items-center shadow-xs" *ngIf="doc.cuantitativo">
+              <i class="bi bi-speedometer2 text-blue-600 me-2 fs-6"></i>
+              <div>
+                <p class="text-blue-400 mb-0 uppercase fw-bold" style="font-size: 0.55rem;">Valor Cuantitativo</p>
+                <span class="text-blue-700 fw-black small">{{ doc.cuantitativo }} <small>g/L</small></span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -164,21 +120,17 @@
     </div>
   </div>
 
-  <div class="d-flex justify-content-center mt-4" *ngIf="filteredDocumentos.length > 0">
-    <nav aria-label="Navegación de documentos">
-      <ul class="pagination">
+  <div class="mt-8 flex justify-center" *ngIf="filteredDocumentos.length > 0">
+    <nav class="bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
+      <ul class="pagination mb-0 border-0">
         <li class="page-item" [class.disabled]="currentPage === 1">
-          <button class="page-link" (click)="prevPage()" aria-label="Anterior">
-            <span aria-hidden="true">&laquo;</span>
-          </button>
+          <button class="page-link border-0 rounded-xl mx-1 hover:bg-blue-50" (click)="prevPage()"><i class="bi bi-chevron-left text-primary"></i></button>
         </li>
-        <li class="page-item" *ngFor="let page of getPageNumbers(); trackBy: trackByPage" [class.active]="page === currentPage">
-          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+          <button class="page-link border-0 rounded-xl mx-1 fw-bold" [ngClass]="page === currentPage ? 'bg-primary text-white' : 'text-slate-600 hover:bg-blue-50'" (click)="goToPage(page)">{{ page }}</button>
         </li>
         <li class="page-item" [class.disabled]="currentPage === totalPages">
-          <button class="page-link" (click)="nextPage()" aria-label="Siguiente">
-            <span aria-hidden="true">&raquo;</span>
-          </button>
+          <button class="page-link border-0 rounded-xl mx-1 hover:bg-blue-50" (click)="nextPage()"><i class="bi bi-chevron-right text-primary"></i></button>
         </li>
       </ul>
     </nav>

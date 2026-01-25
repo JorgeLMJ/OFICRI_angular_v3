@@ -1,95 +1,163 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { NgIf, CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-// 👇 CORRECCIÓN 1: Ajustamos la ruta (agregamos ../ para subir un nivel más)
-import { DocumentoService } from '../../../services/documento.service';
+import { OficioDosajeService } from '../../../services/oficio-dosaje.service';
+import { LayoutService } from '../../../services/layout.service';
+import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
 
 declare const DocsAPI: any;
 
 @Component({
   selector: 'app-oficio-dosaje-onlyoffice',
-  // 👇 Asegúrate que el archivo HTML tenga EXACTAMENTE este nombre
   templateUrl: './oficio-dosaje-onlyoffice.component.html',
   standalone: true,
-  imports: [CommonModule]
+  imports: [NgIf,CommonModule]
 })
 export class OficioDosajeOnlyofficeComponent implements OnInit, OnDestroy {
+  @ViewChild('editorContainer') editorContainer!: ElementRef;
 
-  docEditor: any = null;
-  documentoId: number | null = null;
-  isLoading = true;
+  editorConfig: any = null;
+  configReceived = false;
+  docEditor: any = null;    
+  oficioId!: number;
+  
+  guardadoExitoso = false;
+  cargaExitosa = false;    
+  esBorradorVacio = false;
+  private routeSub!: Subscription;
+  private scriptCheckInterval: any = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private documentoService: DocumentoService
+    private oficioDosajeService: OficioDosajeService,
+    private layoutService: LayoutService
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.documentoId = +id;
-        this.iniciarEditor(this.documentoId);
-      } else {
-        this.regresar();
-      }
-    });
-  }
+    // 👇 OCULTAR HEADER INMEDIATAMENTE
+    setTimeout(() => {
+      this.layoutService.hideHeader();
+    }, 0);
 
-  iniciarEditor(id: number) {
-    this.isLoading = true;
-
-    this.documentoService.getEditorConfig(id, 'edit').subscribe({
-      next: (config: any) => {
-        
-        if (config.editorConfig) {
-          config.width = '100%';
-          config.height = '100%';
-          config.editorConfig.customization = {
-            ...config.editorConfig.customization,
-            compactHeader: false,
-            toolbar: true,
-            autosave: false,
-            forcesave: true,
-            uiTheme: 'theme-classic-light',
-          };
+    this.routeSub = this.route.paramMap.subscribe(params => {
+      const idParam = params.get('id');
+      if (idParam) {
+        const nuevoId = Number(idParam);
+        if (this.oficioId !== nuevoId) {
+          this.oficioId = nuevoId;
+          this.verificarEstadoInicial(nuevoId);
         }
-
-        setTimeout(() => {
-          if (typeof DocsAPI !== 'undefined') {
-            this.docEditor = new DocsAPI.DocEditor("onlyoffice-container", config);
-            this.isLoading = false;
-          } else {
-            console.error('La API de OnlyOffice no está cargada.');
-            Swal.fire('Error', 'No se pudo cargar el editor.', 'error');
-          }
-        }, 100);
-      },
-      // 👇 CORRECCIÓN 3: Agregamos el tipo ': any' al error
-      error: (err: any) => {
-        console.error('Error obteniendo config:', err);
-        this.isLoading = false;
-        Swal.fire('Error', 'No se pudo abrir el documento.', 'error').then(() => {
-          this.regresar();
-        });
       }
     });
   }
 
-  regresar() {
-    this.router.navigate(['/dashboard/oficio-dosaje']);
+  verificarEstadoInicial(id: number) {
+    this.oficioDosajeService.getOficioDosajeById(id).subscribe({
+      next: (doc) => {
+        this.esBorradorVacio = !doc.nombresyapellidosPNP && !doc.referencia;
+        this.oficioId = id;
+        this.recargarEditor();
+      },
+      error: () => {
+        this.oficioId = id;
+        this.recargarEditor();
+      }
+    });
   }
+
+  recargarEditor() {
+      if (this.docEditor) {
+        try { this.docEditor.destroyEditor(); } catch (e) { console.warn('Error cleanup', e); }
+        this.docEditor = null;
+      }
+      
+      this.configReceived = false;
+      this.editorConfig = null;
+      this.cargaExitosa = false;
+  
+      console.log(`📥 Solicitando configuración para Doc ID: ${this.oficioId}`);
+      
+      this.oficioDosajeService.getEditorConfigOficioDosaje(this.oficioId, 'edit').subscribe({
+        next: (config: any) => {
+          if (config.editorConfig && config.editorConfig.customization) {
+              config.editorConfig.customization.autosave = false; 
+              config.editorConfig.customization.forcesave = true;
+          }
+  
+          this.editorConfig = config;
+          this.configReceived = true;
+          this.cargaExitosa = true; 
+          this.intentarIniciarEditor();
+        },
+        error: (err) => {
+          console.error('❌ Error al cargar config:', err);
+          this.cargaExitosa = false; 
+          
+          Swal.fire({
+            icon: 'error',
+            title: 'Documento no encontrado',
+            text: 'El documento que buscas no existe o fue eliminado.',
+            timer: 5000,
+            showConfirmButton: false
+          }).then(() => {
+            this.router.navigate(['/dashboard/documento']);
+          });
+        }
+      });
+    }
+
+    intentarIniciarEditor() {
+    if (typeof DocsAPI !== 'undefined') {
+      this.iniciarOnlyOffice();
+    } else {
+      console.warn('⏳ DocsAPI aún no está listo. Esperando...');
+      this.waitForScript();
+    }
+  }
+  waitForScript() {
+    if (this.scriptCheckInterval) clearInterval(this.scriptCheckInterval);
+    this.scriptCheckInterval = setInterval(() => {
+      if (typeof DocsAPI !== 'undefined') {
+        clearInterval(this.scriptCheckInterval);
+        this.iniciarOnlyOffice();
+      }
+    }, 200);
+  }
+
+  iniciarOnlyOffice() {
+    if (this.configReceived && !this.docEditor) {
+      console.log('🚀 Iniciando instancia de ONLYOFFICE...');
+      try {
+        this.docEditor = new DocsAPI.DocEditor("contenedor_onlyoffice", this.editorConfig);
+      } catch (e) {
+        console.error('❌ Error crítico al crear DocEditor:', e);
+      }
+    }
+  }
+
+   guardarDocumento() {
+    if (this.docEditor) {
+      this.docEditor.serviceCommand("forcesave");
+      this.guardadoExitoso = true;
+      setTimeout(() => {
+        this.router.navigate(['/dashboard/oficio-dosaje'], { 
+          queryParams: { updatedId: this.oficioId } 
+        });
+      }, 1500);
+
+    } else {
+      console.warn('El editor no estaba listo para guardar.');
+    }
+  }
+
+  regresar() { this.router.navigate(['/dashboard/oficio-dosaje']); }
 
   ngOnDestroy() {
     if (this.docEditor) {
-      try {
-        this.docEditor.destroyEditor();
-      } catch (e) {
-        console.warn('Error al destruir editor:', e);
-      }
-      this.docEditor = null;
+      try { this.docEditor.destroyEditor(); } catch(e) {}
     }
+    this.layoutService.showHeader();
   }
 }

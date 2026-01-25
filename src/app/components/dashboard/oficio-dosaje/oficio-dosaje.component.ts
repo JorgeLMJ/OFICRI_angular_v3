@@ -1,166 +1,116 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { OficioDosaje } from '../../../models/oficio-dosaje.model';
 import { OficioDosajeService } from '../../../services/oficio-dosaje.service';
-import { AuthService } from '../../../services/auth.service';
 import Swal from 'sweetalert2';
-import * as bootstrap from 'bootstrap';
-import { SafeUrlPipe } from '../../../pipes/safe-url.pipe';
 
 @Component({
   selector: 'app-oficio-dosaje',
   templateUrl: './oficio-dosaje.component.html',
   standalone: true,
-  imports: [CommonModule, FormsModule, SafeUrlPipe]
+  imports: [CommonModule, FormsModule]
 })
-export class OficioDosajeComponent implements OnInit, AfterViewInit, OnDestroy {
+export class OficioDosajeComponent implements OnInit, OnDestroy {
   oficios: OficioDosaje[] = [];
   searchTerm = '';
 
   // Paginación
   currentPage = 1;
   pageSize = 6;
-  maxVisiblePages = 5;
 
-  @ViewChild('pdfModal') pdfModalEl!: ElementRef;
-  private modalInstance: bootstrap.Modal | null = null;
-  currentPdfUrl: string | null = null;
-  pdfModalTitle = 'Vista Previa del Oficio';
+  // 🕒 Lógica de Sincronización (Igual a Documentos)
+  updatingId: number | null = null;
+  countdown: number = 0;
 
   constructor(
     private oficioDosajeService: OficioDosajeService,
     private router: Router,
-    private authService: AuthService
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.loadOficios();
-  }
 
-  ngAfterViewInit(): void {
-    if (this.pdfModalEl) {
-      this.modalInstance = new bootstrap.Modal(this.pdfModalEl.nativeElement, {
-        backdrop: true, keyboard: true, focus: true
-      });
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (this.modalInstance) {
-      this.modalInstance.dispose();
-    }
-  }
-
-  nuevoOficio(): void {
-    this.router.navigate(['/dashboard/oficio-dosaje-registro']);
-  }
-
-  editarOficio(id: number): void {
-    this.router.navigate(['/dashboard/oficio-dosaje-registro', id]);
-  }
-
-  // 👇 MÉTODO DE REDIRECCIÓN A LA URL SOLICITADA 👇
-  abrirOnlyOffice(documentoId: number): void {
-    if (documentoId) {
-      // Navega a: http://localhost:4200/dashboard/oficio-dosaje-onlyoffice/ID
-      this.router.navigate(['/dashboard/oficio-dosaje-onlyoffice', documentoId]);
-    } else {
-      Swal.fire('Atención', 'Este oficio no tiene un documento base asociado.', 'warning');
-    }
-  }
-  // 👆 FIN DEL MÉTODO 👆
-
-  eliminarOficio(id: number): void {
-      Swal.fire({
-          title: '¿Estás seguro?',
-          text: "Esta acción no se puede deshacer.",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#d33',
-          cancelButtonColor: '#3085d6',
-          confirmButtonText: 'Sí, eliminar'
-      }).then((result) => {
-          if (result.isConfirmed) {
-              this.oficioDosajeService.eliminar(id).subscribe({
-                  next: () => {
-                      this.oficios = this.oficios.filter(o => o.id !== id);
-                      Swal.fire('Eliminado', 'El oficio ha sido eliminado.', 'success');
-                  },
-                  error: () => Swal.fire('Error', 'No se pudo eliminar.', 'error')
-              });
-          }
-      });
-  }
-
-  loadOficios(): void {
-    this.oficioDosajeService.listar().subscribe({
-      next: (data) => {
-        this.oficios = (data ?? []).sort((a, b) => (b.id || 0) - (a.id || 0));
-        this.goToPage(1);
-      },
-      error: (err) => {
-        console.error('Error cargando oficios', err);
-        Swal.fire('❌ Error', 'No se pudieron cargar los oficios', 'error');
+    // Escuchar si regresamos del editor con un ID para actualizar
+    this.route.queryParams.subscribe(params => {
+      const id = params['updatedId'];
+      if (id) {
+        this.iniciarContadorActualizacion(Number(id));
       }
     });
   }
 
-  get filteredOficios(): OficioDosaje[] {
-    const q = this.searchTerm.trim().toLowerCase();
-    if (!q) return [...this.oficios];
-    return this.oficios.filter(oficio =>
-      (oficio.nro_oficio?.toLowerCase().includes(q)) ||
-      (oficio.nro_informe?.toLowerCase().includes(q)) ||
-      (oficio.referencia?.toLowerCase().includes(q))
-    );
+  iniciarContadorActualizacion(id: number) {
+    this.updatingId = id;
+    this.countdown = 7; // Mismo tiempo que Documentos
+
+    const interval = setInterval(() => {
+      this.countdown--;
+
+      if (this.countdown <= 0) {
+        clearInterval(interval);
+        this.updatingId = null; 
+        this.loadOficios(); // Recarga la lista para ver los cambios finales
+        
+        // Limpiar la URL
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {}
+        });
+      }
+    }, 1000); 
   }
 
-  get totalPages(): number {
-    return Math.max(1, Math.ceil(this.filteredOficios.length / this.pageSize));
+  loadOficios(): void {
+    this.oficioDosajeService.getOficiosDosaje().subscribe({
+      next: (data) => {
+        this.oficios = (data ?? []).sort((a, b) => (b.id || 0) - (a.id || 0));
+      },
+      error: (err) => console.error('Error cargando oficios', err)
+    });
   }
 
-  get paginatedOficios(): OficioDosaje[] {
+  abrirOnlyOffice(oficioId: number): void {
+  this.router.navigate(['/dashboard/oficio-dosaje-onlyoffice', oficioId]);
+}
+  // --- MÉTODOS DE APOYO ---
+  nuevoOficio() { this.router.navigate(['/dashboard/oficio-dosaje-registro']); }
+  editarOficio(id: number) { this.router.navigate(['/dashboard/oficio-dosaje-registro', id]); }
+  
+  eliminarOficio(id: number) {
+    Swal.fire({
+      title: '¿Eliminar oficio?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.oficioDosajeService.deleteOficioDosaje(id).subscribe(() => {
+          this.oficios = this.oficios.filter(o => o.id !== id);
+          Swal.fire('Eliminado', '', 'success');
+        });
+      }
+    });
+  }
+
+  // Paginación simple
+  get filteredOficios() {
+    const q = this.searchTerm.toLowerCase();
+    return this.oficios.filter(o => o.nro_oficio?.toLowerCase().includes(q));
+  }
+  get totalPages() { return Math.ceil(this.filteredOficios.length / this.pageSize); }
+  get paginatedOficios() {
     const start = (this.currentPage - 1) * this.pageSize;
     return this.filteredOficios.slice(start, start + this.pageSize);
   }
+  prevPage() { if (this.currentPage > 1) this.currentPage--; }
+  nextPage() { if (this.currentPage < this.totalPages) this.currentPage++; }
+  goToPage(p: number) { this.currentPage = p; }
+  getPageNumbers() { return Array(this.totalPages).fill(0).map((x, i) => i + 1); }
+  trackById(index: number, item: OficioDosaje) { return item.id!; }
 
-  goToPage(p: number): void {
-    this.currentPage = Math.min(Math.max(1, p), this.totalPages);
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-    }
-  }
-
-  prevPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
-  }
-
-  getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const half = Math.floor(this.maxVisiblePages / 2);
-    let start = Math.max(1, this.currentPage - half);
-    let end = Math.min(this.totalPages, start + this.maxVisiblePages - 1);
-    if (end - start + 1 < this.maxVisiblePages) {
-      start = Math.max(1, end - this.maxVisiblePages + 1);
-    }
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
-
-  trackByPage(_: number, page: number): number {
-    return page;
-  }
-  
-  trackById(_: number, item: OficioDosaje): number {
-      return item.id!;
-  }
+  ngOnDestroy(): void {}
 }

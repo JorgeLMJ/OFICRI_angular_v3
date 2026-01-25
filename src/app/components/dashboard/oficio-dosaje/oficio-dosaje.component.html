@@ -1,78 +1,109 @@
-<div class="container-fluid p-4 bg-light min-vh-100">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h2 class="text-primary fw-bold mb-0">
-        <i class="bi bi-file-earmark-medical-fill me-2"></i>Gestión de Oficios Dosaje
-      </h2>
-      <p class="text-muted small mb-0">Administración y generación de oficios periciales</p>
-    </div>
-    <button class="btn btn-success shadow-sm px-4" (click)="nuevoOficio()">
-      <i class="bi bi-plus-circle me-2"></i>Nuevo Oficio
+<div class="container mt-4 pb-5">
+  <div class="mb-4 text-start">
+    <h2 class="text-primary mb-1 fw-bold tracking-tight">
+      <i class="bi bi-file-earmark-medical-fill me-2"></i> Gestión de Oficios Dosaje
+    </h2>
+    <p class="text-slate-500 small mb-3">Administración y generación de oficios periciales</p>
+    
+    <button class="btn btn-success shadow-sm px-4 rounded-pill fw-bold transform transition hover:scale-105 active:scale-95" (click)="nuevoOficio()">
+      <i class="bi bi-plus-circle me-2"></i> Nuevo Oficio
     </button>
   </div>
 
-  <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-2">
-      <div class="input-group">
-        <span class="input-group-text bg-transparent border-0 text-primary">
-          <i class="bi bi-search fs-5"></i>
-        </span>
-        <input
-          type="text"
-          class="form-control border-0 shadow-none"
-          placeholder="Buscar por N° de oficio, informe o referencia..."
-          [(ngModel)]="searchTerm"
-          (input)="goToPage(1)"
-        />
-      </div>
+  <div class="mb-4">
+    <div class="input-group shadow-sm rounded-pill overflow-hidden border-2 border-slate-100 bg-white focus-within:border-primary transition-all">
+      <span class="input-group-text bg-white border-0 ps-3">
+        <i class="bi bi-search text-primary"></i>
+      </span>
+      <input 
+        type="text" 
+        class="form-control border-0 shadow-none py-2 text-sm" 
+        placeholder="Buscar por número de oficio, informe o perito..." 
+        [(ngModel)]="searchTerm" 
+        (input)="goToPage(1)">
     </div>
   </div>
 
   <div class="row g-4" *ngIf="filteredOficios.length > 0">
-    <div class="col-12 col-md-6 col-xl-4" *ngFor="let oficio of paginatedOficios; trackBy: trackById">
-      <div class="card h-100 shadow-sm border-0 border-top border-primary border-4 transition-hover">
+    <div class="col-12 col-md-6 col-lg-4" *ngFor="let oficio of paginatedOficios; trackBy: trackById">
+      
+      <div class="h-full rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-blue-600 bg-white position-relative overflow-hidden transition-all duration-300 hover:shadow-md">
         
-        <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-start">
-          <span class="badge bg-primary-subtle text-primary rounded-pill px-3">ID: #{{ oficio.id }}</span>
-          
-          <div class="d-flex gap-1">
+        <div *ngIf="oficio.id === updatingId" 
+             class="position-absolute inset-0 z-50 d-flex flex-column justify-content-center align-items-center backdrop-blur-sm bg-white/90">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <h6 class="text-primary fw-bold tracking-widest small">SINCRONIZANDO</h6>
+          <div class="display-4 fw-bold text-slate-800">{{ countdown }}</div>
+        </div>
+
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="px-2 py-1 bg-white text-slate-600 rounded-lg text-xs font-bold border border-slate-200 shadow-sm">
+              ID: #{{ oficio.id }}
+            </span>
             
-            <button class="btn btn-sm btn-outline-warning" (click)="editarOficio(oficio.id!)" title="Editar datos">
-                <i class="bi bi-pencil-square"></i>
-            </button>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm border-2 d-flex align-items-center gap-2 px-3 py-1.5 transition-all duration-300 shadow-sm rounded-xl bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-500 hover:border-amber-500 hover:text-white group" 
+                      (click)="editarOficio(oficio.id!)" title="Editar datos">
+                  <i class="bi bi-pencil-square"></i>
+                  <span class="fw-bold tracking-tight" style="font-size: 0.7rem;">EDITAR</span>
+              </button>
 
-            <button class="btn btn-sm btn-outline-danger" (click)="eliminarOficio(oficio.id!)" title="Eliminar">
-                <i class="bi bi-trash"></i>
-            </button>
-
-            <button class="btn btn-sm btn-primary d-flex align-items-center gap-2 ms-1" 
-                    (click)="abrirOnlyOffice(oficio.documentoId!)" 
-                    [disabled]="!oficio.documentoId"
-                    title="Abrir editor de documento">
+              <button class="btn btn-sm border-2 d-flex align-items-center gap-2 px-3 py-1.5 transition-all duration-300 shadow-sm rounded-xl bg-cyan-100 border-cyan-300 text-cyan-700 hover:bg-cyan-600 hover:border-cyan-600 hover:text-white group" 
+                      (click)="abrirOnlyOffice(oficio.id!)" title="Abrir en Editor">
                 <i class="bi bi-file-earmark-word-fill"></i>
-                <span>Abrir Documento</span>
-            </button>
+                <span class="fw-bold tracking-tight" style="font-size: 0.7rem;">ABRIR</span>
+              </button>
+            </div>
           </div>
-          </div>
-        
-        <div class="card-body">
-          <h6 class="fw-bold text-dark mb-1 text-truncate">{{ oficio.nro_oficio }}</h6>
-          <p class="text-primary small fw-semibold mb-3">
-            <i class="bi bi-hash me-1"></i>Informe: {{ oficio.nro_informe }}
-          </p>
 
-          <div class="d-flex flex-column gap-2 small text-muted">
+          <h5 class="fw-bold mb-2 text-slate-800 line-clamp-1 fs-6">
+            {{ oficio.nro_oficio }}
+          </h5>
+
+          <div class="space-y-1.5 border-t border-slate-200 pt-2">
             <div class="d-flex align-items-center">
-              <i class="bi bi-calendar-event text-secondary me-2"></i>
-              <span><strong>Fecha:</strong> {{ oficio.fecha }}</span>
+              <div class="w-7 h-7 rounded-lg bg-white d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
+                <i class="bi bi-hash text-blue-600 small"></i>
+              </div>
+              <div>
+                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;">Nro. Informe</p>
+                <p class="fw-semibold text-slate-700 mb-0 small lh-1">{{ oficio.nro_informe }}</p>
+              </div>
             </div>
+
             <div class="d-flex align-items-center">
-              <i class="bi bi-person-badge text-secondary me-2"></i>
-              <span class="text-truncate"><strong>Perito:</strong> {{ oficio.gradoPNP }} {{ oficio.nombresyapellidosPNP }}</span>
+              <div class="w-7 h-7 rounded-lg bg-white d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
+                <i class="bi bi-calendar-event text-blue-600 small"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;">Fecha de Emisión</p>
+                <p class="fw-semibold text-slate-700 mb-0 small text-truncate lh-1">{{ oficio.fecha }}</p>
+              </div>
             </div>
+
             <div class="d-flex align-items-center">
-              <i class="bi bi-bookmark-fill text-secondary me-2"></i>
-              <span class="text-truncate"><strong>Ref:</strong> {{ oficio.referencia }}</span>
+              <div class="w-7 h-7 rounded-lg bg-white d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
+                <i class="bi bi-person-badge text-blue-600 small"></i>
+              </div>
+              <div>
+                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;">Perito PNP</p>
+                <p class="fw-semibold text-slate-700 mb-0 small lh-1">
+                  {{ oficio.gradoPNP }} {{ oficio.nombresyapellidosPNP }}
+                </p>
+              </div>
+            </div>
+            
+            <div class="d-flex align-items-center pt-1">
+              <div class="w-7 h-7 rounded-lg bg-white text-slate-500 d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
+                <i class="bi bi-check-circle small"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;">Estado del Oficio</p>
+                <span class="badge rounded-lg fw-bold shadow-xs py-1 bg-emerald-600 text-white" style="width: fit-content; font-size: 0.65rem;">
+                  GENERADO
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -81,41 +112,19 @@
     </div>
   </div>
 
-  <div class="text-center py-5" *ngIf="filteredOficios.length === 0">
-    <i class="bi bi-file-earmark-x display-1 text-muted opacity-25 mb-3"></i>
-    <h4 class="text-muted">No se encontraron registros</h4>
-    <p class="text-muted">Prueba con otros términos de búsqueda.</p>
-  </div>
-
-  <div class="d-flex justify-content-center mt-5" *ngIf="filteredOficios.length > 0">
-    <nav>
-      <ul class="pagination shadow-sm">
+  <div class="mt-8 flex justify-center" *ngIf="filteredOficios.length > 0">
+    <nav class="bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
+      <ul class="pagination mb-0 border-0">
         <li class="page-item" [class.disabled]="currentPage === 1">
-          <button class="page-link" (click)="prevPage()"><i class="bi bi-chevron-left"></i></button>
+          <button class="page-link border-0 rounded-xl mx-1 hover:bg-blue-50" (click)="prevPage()"><i class="bi bi-chevron-left text-primary"></i></button>
         </li>
-        <li class="page-item" *ngFor="let page of getPageNumbers(); trackBy: trackByPage">
-          <button class="page-link" [class.active]="page === currentPage" (click)="goToPage(page)">
-            {{ page }}
-          </button>
+        <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+          <button class="page-link border-0 rounded-xl mx-1 fw-bold" [ngClass]="page === currentPage ? 'bg-primary text-white' : 'text-slate-600 hover:bg-blue-50'" (click)="goToPage(page)">{{ page }}</button>
         </li>
         <li class="page-item" [class.disabled]="currentPage === totalPages">
-          <button class="page-link" (click)="nextPage()"><i class="bi bi-chevron-right"></i></button>
+          <button class="page-link border-0 rounded-xl mx-1 hover:bg-blue-50" (click)="nextPage()"><i class="bi bi-chevron-right text-primary"></i></button>
         </li>
       </ul>
     </nav>
-  </div>
-</div>
-
-<div class="modal fade" id="pdfModal" #pdfModal tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-dark text-white py-2">
-        <h5 class="modal-title small"><i class="bi bi-file-pdf me-2"></i>{{ pdfModalTitle }}</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-0 bg-secondary" style="height: 85vh;">
-        <iframe *ngIf="currentPdfUrl" [src]="currentPdfUrl | safeUrl" width="100%" height="100%" frameborder="0"></iframe>
-      </div>
-    </div>
   </div>
 </div>

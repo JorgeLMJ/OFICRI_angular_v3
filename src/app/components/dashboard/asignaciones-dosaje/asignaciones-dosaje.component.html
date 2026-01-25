@@ -1,120 +1,134 @@
-<div class="container mt-4">
-  <!-- Encabezado -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-primary">
+<div class="container mt-4 pb-5">
+  <div class="mb-4 text-start">
+    <h2 class="text-primary mb-1 fw-bold tracking-tight">
       <i class="bi bi-journal-text me-2"></i> Gestión de Asignaciones Dosaje
     </h2>
-    <button 
-          *ngIf="!esQuimicoFarmaceutico" 
-          class="btn btn-success" 
-          (click)="nuevaAsignacion()">
-          <i class="bi bi-plus-circle me-2"></i> Nueva Asignación Dosaje
-        </button>
+    <p class="text-slate-500 small mb-3">Control y seguimiento de peritajes químicos</p>
+    
+    <button *ngIf="!esQuimicoFarmaceutico" 
+            class="btn btn-success shadow-sm px-4 rounded-pill fw-bold transform transition hover:scale-105 active:scale-95" 
+            (click)="nuevaAsignacion()">
+      <i class="bi bi-plus-circle me-2"></i> Nueva Asignación
+    </button>
   </div>
 
-  <!-- 🔎 Buscador -->
   <div class="mb-4">
-    <div class="input-group">
-      <span class="input-group-text bg-primary text-white">
-        <i class="bi bi-search"></i>
+    <div class="input-group shadow-sm rounded-pill overflow-hidden border-2 border-slate-100 bg-white focus-within:border-primary transition-all">
+      <span class="input-group-text bg-white border-0 ps-3">
+        <i class="bi bi-search text-primary"></i>
       </span>
-      <input type="text" class="form-control" placeholder="Buscar por área, estado o resultado..."
-             [(ngModel)]="searchTerm" (input)="applyFilter()">
+      <input 
+        type="text" 
+        class="form-control border-0 shadow-none py-2 text-sm" 
+        placeholder="Buscar por área, estado o resultado..." 
+        [(ngModel)]="searchTerm" (input)="applyFilter()">
     </div>
   </div>
 
-  <!-- 📋 Grid de cards -->
   <div class="row g-4">
     <div class="col-12 col-md-6 col-lg-4" *ngFor="let asignacion of paginatedAsignaciones">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-light d-flex justify-content-between align-items-start">
-          <div>
-            <h5 class="mb-1 text-primary">Dosaje #{{ asignacion.id }}</h5>
-            <p class="mb-1 text-muted small">
-              <i class="bi bi-file-earmark me-1"></i> Doc: {{ asignacion.documentoId }} |
-              <i class="bi bi-person me-1"></i> Emp: 
-              <span *ngIf="empleadosMap.has(asignacion.empleadoId!)">
-                {{ empleadosMap.get(asignacion.empleadoId!)?.nombre }} {{ empleadosMap.get(asignacion.empleadoId!)?.apellido }}
-              </span>
-              <span *ngIf="!empleadosMap.has(asignacion.empleadoId!)">
-                {{ asignacion.empleadoId }}
-              </span>
-            </p>
-            <p class="mb-0">
-              <strong>Área:</strong> {{ asignacion.area }}
-            </p>
-          </div>
-          <div class="btn-group flex-shrink-0" role="group">
-            <button class="btn btn-sm btn-outline-primary" (click)="editarAsignacion(asignacion.id!)">
-              <i class="bi bi-pencil-square"></i>
-            </button>
       
+      <div class="h-full rounded-2xl shadow-sm border border-slate-200 border-l-4 position-relative overflow-hidden transition-all duration-300 hover:shadow-md bg-white"
+           [ngClass]="{
+             'border-l-amber-500': asignacion.estado === 'EN_PROCESO',
+             'border-l-blue-600': asignacion.estado === 'COMPLETADO'
+           }">
+        
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold border border-slate-200 shadow-sm uppercase">
+              Dosaje #{{ asignacion.id }}
+            </span>
+            
+            <button class="btn btn-sm border-2 d-flex align-items-center gap-2 px-3 py-1.5 transition-all duration-300 shadow-sm rounded-xl bg-cyan-100 border-cyan-300 text-cyan-700 hover:bg-cyan-600 hover:border-cyan-600 hover:text-white group" 
+                    (click)="editarAsignacion(asignacion.id!)" 
+                    title="Editar Asignación">
+              <i class="bi bi-pencil-square fs-6"></i>
+              <span class="fw-bold tracking-tight" style="font-size: 0.7rem;">EDITAR</span>
+            </button>
+          </div>
+
+          <h5 class="fw-bold mb-2 text-slate-800 line-clamp-1 fs-6 uppercase tracking-wide">
+            Área: {{ asignacion.area }}
+          </h5>
+
+          <div class="space-y-1.5 border-t border-slate-100 pt-2">
+            <div class="d-flex align-items-center">
+              <div class="w-7 h-7 rounded-lg bg-white d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
+                <i class="bi bi-person text-blue-600 small"></i>
+              </div>
+              <div class="overflow-hidden">
+                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;">Responsable</p>
+                <p class="fw-semibold text-slate-700 mb-0 small lh-1 text-truncate">
+                  <span *ngIf="empleadosMap.has(asignacion.empleadoId!)">
+                    {{ empleadosMap.get(asignacion.empleadoId!)?.nombre }} {{ empleadosMap.get(asignacion.empleadoId!)?.apellido }}
+                  </span>
+                  <span *ngIf="!empleadosMap.has(asignacion.empleadoId!)">Emp #{{ asignacion.empleadoId }}</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center">
+              <div class="w-7 h-7 rounded-lg bg-white d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
+                <i class="bi bi-file-earmark-text text-blue-600 small"></i>
+              </div>
+              <div>
+                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;">Documento Base</p>
+                <p class="fw-semibold text-slate-700 mb-0 small lh-1">ID #{{ asignacion.documentoId }}</p>
+              </div>
+            </div>
+            
+            <div class="d-flex align-items-center pt-1">
+              <div class="w-7 h-7 rounded-lg bg-white text-slate-500 d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
+                <i class="bi bi-activity small"></i>
+              </div>
+              <div class="d-flex flex-column">
+                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;">Estado del Proceso</p>
+                <span class="badge rounded-lg fw-bold shadow-xs py-1 mt-0.5" style="width: fit-content; font-size: 0.65rem;"
+                      [ngClass]="{
+                        'bg-amber-500 text-white': asignacion.estado === 'EN_PROCESO',
+                        'bg-emerald-600 text-white': asignacion.estado === 'COMPLETADO'
+                      }">
+                  {{ asignacion.estado }}
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-2 p-2 bg-blue-50 rounded-xl border border-blue-100 d-flex align-items-center shadow-xs">
+              <i class="bi bi-droplet-half text-blue-600 me-2 fs-6"></i>
+              <div>
+                <p class="text-blue-400 mb-0 uppercase fw-bold" style="font-size: 0.55rem;">Resultado</p>
+                <span class="text-blue-700 fw-black small uppercase">
+                  {{ asignacion.cualitativo ? (asignacion.cualitativo + ' g/l') : 'Sin resultado' }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="card-body">
-          <p><strong>Estado:</strong> 
-            <span class="badge" [ngClass]="{
-              'bg-warning': asignacion.estado === 'EN_PROCESO',
-              'bg-success': asignacion.estado === 'COMPLETADO'
-            }">{{ asignacion.estado }}</span>
-          </p>
-          <h6>Resultado Cualitativo:</h6>
-          <ul class="list-group list-group-flush small">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span>Cualitativo</span>
-              <span class="badge bg-primary rounded-pill px-3 py-2 fw-bold">
-                {{ asignacion.cualitativo ? (asignacion.cualitativo + ' g/l') : 'Sin resultado' }}
-              </span>
-            </li>
-          </ul>
-        </div>
       </div>
     </div>
   </div>
 
-  <!-- 🚫 Sin resultados -->
   <div class="text-center py-5" *ngIf="asignacionesFiltradas.length === 0">
-    <i class="bi bi-search display-4 text-muted mb-3"></i>
-    <h5 class="text-muted">No se encontraron asignaciones</h5>
-    <p class="text-muted">Intenta con otros términos de búsqueda</p>
+    <i class="bi bi-search display-4 text-slate-300 mb-3"></i>
+    <h5 class="text-slate-600 fw-bold">No se encontraron asignaciones</h5>
+    <p class="text-slate-400 small">Intenta con otros términos de búsqueda</p>
   </div>
 
-  <!-- 📄 Paginación -->
-  <div class="d-flex justify-content-center mt-4" *ngIf="asignacionesFiltradas.length > 0">
-    <nav>
-      <ul class="pagination">
+  <div class="mt-8 flex justify-center" *ngIf="asignacionesFiltradas.length > 0">
+    <nav class="bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
+      <ul class="pagination mb-0 border-0">
         <li class="page-item" [class.disabled]="currentPage === 1">
-          <button class="page-link" (click)="prevPage()">Anterior</button>
+          <button class="page-link border-0 rounded-xl mx-1 hover:bg-blue-50" (click)="prevPage()"><i class="bi bi-chevron-left text-primary"></i></button>
         </li>
-        
-        <li class="page-item" 
-            *ngFor="let page of getPageNumbers(); trackBy: trackByPage"
-            [class.active]="page === currentPage">
-          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+          <button class="page-link border-0 rounded-xl mx-1 fw-bold" [ngClass]="page === currentPage ? 'bg-primary text-white' : 'text-slate-600 hover:bg-blue-50'" (click)="goToPage(page)">{{ page }}</button>
         </li>
-        
         <li class="page-item" [class.disabled]="currentPage === totalPages">
-          <button class="page-link" (click)="nextPage()">Siguiente</button>
+          <button class="page-link border-0 rounded-xl mx-1 hover:bg-blue-50" (click)="nextPage()"><i class="bi bi-chevron-right text-primary"></i></button>
         </li>
       </ul>
     </nav>
-  </div>
-</div>
-
-<!-- 👇 Modal para visualizar el PDF -->
-<div class="modal fade" id="pdfModal" #pdfModal tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white" style="padding: 0.25rem 0.75rem; min-height: 2.25rem;">
-        <h5 class="modal-title" id="pdfModalLabel">{{ pdfModalTitle }}</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-0" style="height: 100vh; overflow: hidden;">
-        <iframe *ngIf="currentPdfUrl" [src]="currentPdfUrl | safeUrl" width="100%" height="100%" frameborder="0"
-          style="border: none; background: #fff; overflow: hidden;">
-        </iframe>
-      </div>
-    </div>
   </div>
 </div>

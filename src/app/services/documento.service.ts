@@ -37,22 +37,15 @@ export class DocumentoService {
     return this.http.get(`${this.apiUrl}/${id}/editor-config`, { params });
   }
 
-  /**
-   * Descarga el archivo físico (.docx) sin abrir el editor
-   */
   downloadDocumentoFile(id: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${id}/download`, {
       responseType: 'blob'
     });
   }
 
-  /**
-   * Guarda un documento editado manualmente en la base de datos
-   */
   uploadDocumento(id: number, file: File): Observable<string> {
     const formData = new FormData();
-    formData.append('file', file, 'documento_editado.docx');
-    
+    formData.append('file', file, 'documento_editado.docx');    
     return this.http.post(`${this.apiUrl}/${id}/upload`, formData, {
       responseType: 'text'
     });
@@ -60,5 +53,9 @@ export class DocumentoService {
 
   crearNuevoDocumentoVacio(): Observable<number> {
   return this.http.post<number>(`${this.apiUrl}/nuevo`, {});
+}
+
+actualizarTagWord(id: number, tag: string, valor: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/${id}/actualizar-tag`, { tag, valor });
 }
 }

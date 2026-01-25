@@ -76,7 +76,7 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
       const id = params['id'];
       if (id) {
         this.editMode = true;
-        this.oficioDosajeService.obtenerPorId(id).subscribe(oficio => {
+        this.oficioDosajeService.getOficioDosajeById(id).subscribe(oficio => {
           this.oficioForm.patchValue(oficio);
           
           // Cargar el documento asociado en el visor si existe
@@ -176,8 +176,8 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
       }
 
       const req$ = this.editMode 
-        ? this.oficioDosajeService.actualizar(data.id, data) 
-        : this.oficioDosajeService.crear(data);
+        ? this.oficioDosajeService.updateOficioDosaje(data.id, data) 
+        : this.oficioDosajeService.createOficioDosaje(data);
       
       req$.subscribe({
           next: () => this.router.navigate(['/dashboard/oficio-dosaje']),

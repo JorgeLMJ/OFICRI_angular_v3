@@ -1,27 +1,44 @@
-<div class="d-flex flex-column h-100 w-100 bg-light" style="min-height: 100vh;">
+<div class="d-flex flex-column bg-white shadow-sm" 
+     style="margin: -1.5rem; width: calc(100% + 3rem); height: 100vh;">
 
-  <div class="bg-primary text-white p-2 d-flex justify-content-between align-items-center shadow-sm" style="height: 50px;">
+  <div class="bg-primary text-white px-3 d-flex justify-content-between align-items-center border-bottom border-primary-subtle" 
+       style="height: 50px; flex-shrink: 0;">
+    
     <div class="d-flex align-items-center">
-      <i class="bi bi-file-earmark-word-fill fs-4 me-2"></i>
-      <span class="fw-bold">Editor de Documentos</span>
-      <span class="mx-2">|</span>
-      <small class="opacity-75" *ngIf="documentoId">ID: {{ documentoId }}</small>
+      <i class="bi bi-file-earmark-word-fill fs-5 me-2"></i>
+      <span class="fw-bold fs-6">Editor de Oficio Dosaje</span>
+      <span class="mx-2 opacity-50">|</span>
+      <small class="opacity-75 font-monospace">Modo Edición</small>
     </div>
     
-    <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2" (click)="regresar()">
-      <i class="bi bi-arrow-left-circle"></i>
-      <span>Volver a Oficios</span>
-    </button>
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-light text-primary fw-bold d-flex align-items-center gap-2 border-0 shadow-none" 
+                (click)="guardarDocumento()">
+            <i class="bi bi-floppy-fill"></i>
+            <span>Guardar</span>
+        </button>
+
+        <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-2 border-0" 
+                onclick="history.back()"> 
+            <i class="bi bi-arrow-left-circle"></i>
+            <span>Volver a Lista</span>
+        </button>
+    </div>
+
   </div>
 
-  <div class="flex-grow-1 position-relative bg-white">
+  <div class="flex-grow-1 position-relative w-100 p-0 m-0 bg-white" style="overflow: hidden;">
     
-    <div *ngIf="isLoading" class="position-absolute top-50 start-50 translate-middle text-center" style="z-index: 20;">
+    <div *ngIf="!configReceived" class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center bg-white" style="z-index: 20;">
       <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-      <h5 class="text-secondary fw-bold">Cargando editor...</h5>
+      <h6 class="text-secondary fw-bold">Cargando editor...</h6>
     </div>
 
-    <div id="onlyoffice-container" class="w-100 h-100"></div>
+    <div 
+        id="contenedor_onlyoffice" 
+        #editorContainer
+        class="w-100 h-100 d-block">
+    </div>
 
   </div>
 
