@@ -56,7 +56,7 @@ export class OficioDosajeOnlyofficeComponent implements OnInit, OnDestroy {
   verificarEstadoInicial(id: number) {
     this.oficioDosajeService.getOficioDosajeById(id).subscribe({
       next: (doc) => {
-        this.esBorradorVacio = !doc.nombresyapellidosPNP && !doc.referencia;
+        this.esBorradorVacio = !doc.nombresyapellidosPNP ;
         this.oficioId = id;
         this.recargarEditor();
       },

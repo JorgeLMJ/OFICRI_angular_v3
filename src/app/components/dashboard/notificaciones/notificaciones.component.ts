@@ -17,16 +17,17 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   loading = true;
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private notificationService: NotificationService
-  ) {}
+  // --- Propiedades de Paginación ---
+  currentPage = 1;
+  itemsPerPage = 5;
+
+  constructor(private notificationService: NotificationService) {}
 
   ngOnInit(): void {
     this.notificationService.getAllNotifications().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (data) => {
-        // ✅ Ordenar por fecha descendente (más reciente primero)
         this.notifications = data.sort((a, b) => 
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
@@ -36,6 +37,23 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+  }
+
+  // Segmentar notificaciones para la vista actual
+  get paginatedNotifications(): Notification[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    return this.notifications.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.notifications.length / this.itemsPerPage);
+  }
+
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   ngOnDestroy(): void {

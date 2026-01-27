@@ -11,7 +11,6 @@
       </div>
 
       <div class="p-4 overflow-y-auto h-100">
-        
         <form [formGroup]="oficioForm" (ngSubmit)="onSubmit()" novalidate>
 
           <div class="mb-4">
@@ -40,17 +39,17 @@
 
             <div class="mb-3">
               <label class="form-label small fw-bold text-secondary">NÚMERO DE OFICIO</label>
-              <input type="text" class="form-control fw-bold" formControlName="nro_oficio" placeholder="Ej: 4603-2025-REG-POL...">
+              <input type="text" class="form-control fw-bold" formControlName="nro_oficio">
             </div>
 
             <div class="mb-3">
               <label class="form-label small fw-bold text-secondary">NÚMERO DE INFORME</label>
-              <input type="text" class="form-control" formControlName="nro_informe" placeholder="Ej: 6232/2025">
+              <input type="text" class="form-control" formControlName="nro_informe_referencia">
             </div>
 
             <div class="mb-3">
-              <label class="form-label small fw-bold text-secondary">FECHA Y LUGAR</label>
-              <input type="text" class="form-control" formControlName="fecha" placeholder="Ej: Cusco, 26 de agosto del 2025">
+              <label class="form-label small fw-bold text-secondary">FECHA</label>
+              <input type="date" class="form-control" formControlName="fecha">
             </div>
           </div>
 
@@ -62,17 +61,12 @@
             <div class="row g-2 mb-3">
               <div class="col-4">
                 <label class="form-label small fw-bold text-secondary">GRADO</label>
-                <input type="text" class="form-control" formControlName="gradoPNP" placeholder="Ej: MAYOR">
+                <input type="text" class="form-control" formControlName="gradoPNP">
               </div>
               <div class="col-8">
                 <label class="form-label small fw-bold text-secondary">NOMBRES Y APELLIDOS</label>
-                <input type="text" class="form-control" formControlName="nombresyapellidosPNP" placeholder="Nombre completo">
+                <input type="text" class="form-control" formControlName="nombresyapellidosPNP">
               </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label small fw-bold text-secondary">REFERENCIA</label>
-              <textarea class="form-control" formControlName="referencia" rows="2" placeholder="Documento de referencia..."></textarea>
             </div>
           </div>
 
@@ -119,15 +113,18 @@
 <div class="modal fade" id="documentoModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content border-0 shadow">
+      
       <div class="modal-header bg-primary text-white py-2">
         <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-search me-2"></i>Buscar Informe Pericial</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
+
       <div class="modal-body bg-light">
         <div class="input-group mb-3 shadow-sm">
           <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
           <input type="text" class="form-control border-start-0" placeholder="Buscar por N° oficio, nombre o DNI..." [(ngModel)]="terminoBusqueda" (input)="filtrarDocumentos()">
         </div>
+
         <div class="card border-0 shadow-sm">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -146,27 +143,54 @@
                   <td class="text-muted small">{{ doc.dni }}</td>
                   <td class="text-primary small fw-bold">{{ doc.nombreOficio }}</td>
                   <td><span class="badge bg-secondary-subtle text-dark border">{{ doc.tipoMuestra }}</span></td>
+                  
                   <td class="text-center">
-                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" (click)="seleccionarDocumento(doc)" data-bs-dismiss="modal">
+                    <button 
+                      *ngIf="!isDocumentoAsignado(doc.id)" 
+                      class="btn btn-sm btn-outline-primary rounded-pill px-3" 
+                      (click)="seleccionarDocumento(doc)" 
+                      data-bs-dismiss="modal">
                       Seleccionar
                     </button>
+
+                    <span 
+                      *ngIf="isDocumentoAsignado(doc.id)" 
+                      class="badge bg-warning-subtle text-warning border px-2 py-1 fw-bold">
+                      <i class="bi bi-lock-fill me-1"></i>ASIGNADO
+                    </span>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        <nav *ngIf="documentosFiltrados.length > pageSizeModal" class="d-flex justify-content-between align-items-center mt-3">
-            <small class="text-muted">Página {{ currentPageModal }} de {{ totalPagesModal }}</small>
+
+        <nav *ngIf="documentosFiltrados.length > 0" class="d-flex justify-content-between align-items-center mt-3">
+            <small class="text-muted">
+              Página <strong>{{ currentPageModal }}</strong> de <strong>{{ totalPagesModal }}</strong>
+              <span class="ms-2">({{ documentosFiltrados.length }} informes encontrados)</span>
+            </small>
+            
             <ul class="pagination pagination-sm mb-0 shadow-sm">
                 <li class="page-item" [class.disabled]="currentPageModal === 1">
-                  <button class="page-link" (click)="prevPageModal()"><i class="bi bi-chevron-left"></i></button>
+                  <button class="page-link" (click)="prevPageModal()" [disabled]="currentPageModal === 1">
+                    <i class="bi bi-chevron-left"></i>
+                  </button>
                 </li>
+                
                 <li class="page-item" [class.disabled]="currentPageModal === totalPagesModal">
-                  <button class="page-link" (click)="nextPageModal()"><i class="bi bi-chevron-right"></i></button>
+                  <button class="page-link" (click)="nextPageModal()" [disabled]="currentPageModal === totalPagesModal">
+                    <i class="bi bi-chevron-right"></i>
+                  </button>
                 </li>
             </ul>
         </nav>
+
+        <div *ngIf="documentosFiltrados.length === 0" class="text-center py-5 text-muted">
+          <i class="bi bi-clipboard-x display-4 opacity-25"></i>
+          <p class="mt-2">No se encontraron informes disponibles con ese criterio.</p>
+        </div>
+
       </div>
     </div>
   </div>

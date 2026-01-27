@@ -7,7 +7,7 @@ import { OficioDosajeService } from '../../../services/oficio-dosaje.service';
 import { Documento } from '../../../models/documento.model';
 import { DocumentoService } from '../../../services/documento.service';
 import { AuthService } from '../../../services/auth.service';
-
+import Swal from 'sweetalert2';
 declare const DocsAPI: any;
 
 @Component({
@@ -35,6 +35,8 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
   currentPageModal = 1;
   pageSizeModal = 5;
 
+  documentosAsignados: number[] = []
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -46,8 +48,9 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initForm();
-    this.loadDocumentos();
+    this.cargarListas();
     this.checkEditMode();
+    
   }
 
   private initForm() {
@@ -57,18 +60,38 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
       nro_oficio: ['', Validators.required],
       gradoPNP: ['', Validators.required],
       nombresyapellidosPNP: ['', Validators.required],
-      referencia: ['', Validators.required],
-      nro_informe: ['', Validators.required],
+      nro_informe_referencia: ['', Validators.required],
       documentoId: [null, Validators.required]
     });
   }
 
-  private loadDocumentos() {
+  private cargarListas() {
+    // 1. Cargamos todos los documentos
     this.documentoService.getDocumentos().subscribe(data => {
-      // Cargamos todos los documentos disponibles
       this.documentos = data;
       this.documentosFiltrados = [...this.documentos];
     });
+
+    // 2. Cargamos los oficios para saber cuáles documentos ya están "usados"
+    this.oficioDosajeService.getOficiosDosaje().subscribe(oficios => {
+      this.documentosAsignados = oficios
+        .filter(o => o.documentoId !== null)
+        .map(o => o.documentoId!);
+
+      // Si estamos editando, permitimos que el documento actual aparezca como disponible
+      if (this.editMode) {
+        const currentDocId = this.oficioForm.get('documentoId')?.value;
+        if (currentDocId) {
+          this.documentosAsignados = this.documentosAsignados.filter(id => id !== currentDocId);
+        }
+      }
+    });
+  }
+
+  // Función para verificar en el HTML
+  isDocumentoAsignado(documentoId: number | undefined): boolean {
+    if (!documentoId) return false;
+    return this.documentosAsignados.includes(documentoId);
   }
 
   private checkEditMode() {
@@ -156,8 +179,8 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
     this.oficioForm.patchValue({ documentoId: doc.id });
     
     // Auto-rellenar algunos campos si están vacíos
-    if(!this.oficioForm.get('nro_informe')?.value) {
-       this.oficioForm.patchValue({ nro_informe: doc.nombreOficio });
+    if(!this.oficioForm.get('nro_informe_referencia')?.value) {
+       this.oficioForm.patchValue({ nro_informe_referencia: doc.nombreOficio });
     }
 
     this.documentoSeleccionadoOficio = doc.nombreOficio || doc.nombresyapellidos;
@@ -166,25 +189,39 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
 
   // --- ACCIONES ---
   onSubmit() {
-    if (this.oficioForm.valid) {
-      const data = this.oficioForm.getRawValue();
-      const currentUser = this.authService.getCurrentUser();
-      
-      // Agregamos el ID del empleado que registra
-      if (currentUser?.empleadoId) {
-          data.empleadoId = currentUser.empleadoId;
-      }
+  if (this.oficioForm.valid) {
+    Swal.fire({
+      title: 'Procesando...',
+      text: 'Estamos guardando los datos y generando el documento Word.',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    });
 
-      const req$ = this.editMode 
-        ? this.oficioDosajeService.updateOficioDosaje(data.id, data) 
-        : this.oficioDosajeService.createOficioDosaje(data);
-      
-      req$.subscribe({
-          next: () => this.router.navigate(['/dashboard/oficio-dosaje']),
-          error: (e) => alert('Error al guardar: ' + e.message)
-      });
-    }
+    const data = this.oficioForm.getRawValue();
+    
+    // El backend hará el trabajo pesado de POI al recibir este objeto
+    const req$ = this.editMode 
+      ? this.oficioDosajeService.updateOficioDosaje(data.id, data) 
+      : this.oficioDosajeService.createOficioDosaje(data);
+    
+    req$.subscribe({
+      next: () => {
+        Swal.fire({
+          icon: 'success',
+          title: '¡Guardado!',
+          text: 'El oficio y su archivo Word han sido creados correctamente.',
+          timer: 2000,
+          showConfirmButton: false
+        }).then(() => {
+          this.router.navigate(['/dashboard/oficio-dosaje']);
+        });
+      },
+      error: (e) => {
+        Swal.fire('Error', 'No se pudo generar el archivo: ' + e.message, 'error');
+      }
+    });
   }
+}
 
   cancelar() { 
       this.router.navigate(['/dashboard/oficio-dosaje']); 
@@ -195,4 +232,6 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
           try { this.docEditor.destroyEditor(); } catch(e) {}
       } 
   }
+
+  
 }

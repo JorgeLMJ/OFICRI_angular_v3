@@ -3,7 +3,7 @@
     <h2 class="text-primary mb-1 fw-bold tracking-tight">
       <i class="bi bi-journal-text me-2"></i> Gestión de Asignaciones Dosaje
     </h2>
-    <p class="text-slate-500 small mb-3">Control y seguimiento de peritajes químicos</p>
+    <p class="text-slate-500 small mb-3"></p>
     
     <button *ngIf="!esQuimicoFarmaceutico" 
             class="btn btn-success shadow-sm px-4 rounded-pill fw-bold transform transition hover:scale-105 active:scale-95" 
@@ -40,8 +40,7 @@
               Dosaje #{{ asignacion.id }}
             </span>
             
-            <button class="btn btn-sm border-2 d-flex align-items-center gap-2 px-3 py-1.5 transition-all duration-300 shadow-sm rounded-xl bg-cyan-100 border-cyan-300 text-cyan-700 hover:bg-cyan-600 hover:border-cyan-600 hover:text-white group" 
-                    (click)="editarAsignacion(asignacion.id!)" 
+          <button class="btn btn-sm border-2 d-flex align-items-center gap-2 px-3 py-1.5 transition-all duration-300 shadow-sm rounded-xl bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-600 hover:border-amber-600 hover:text-white group" 
                     title="Editar Asignación">
               <i class="bi bi-pencil-square fs-6"></i>
               <span class="fw-bold tracking-tight" style="font-size: 0.7rem;">EDITAR</span>

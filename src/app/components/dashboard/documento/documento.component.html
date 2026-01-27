@@ -1,16 +1,15 @@
 <div class="container mt-4 pb-5">
-  <div class="mb-4 text-start">
+  <header class="mb-4 text-start">
     <h2 class="text-primary mb-1 fw-bold tracking-tight">
-      <i class="bi bi-file-earmark-text-fill me-2"></i> Gestión de Documentos
+      <i class="bi bi-file-earmark-text-fill me-2"></i> Gestión de Informes
     </h2>
-    <p class="text-slate-500 small mb-3">Informes periciales y dosaje etílico</p>
-    
+    <p class="text-slate-500 small mb-3"></p>
     <button class="btn btn-success shadow-sm px-4 rounded-pill fw-bold transform transition hover:scale-105 active:scale-95" (click)="nuevoDocumento()">
       <i class="bi bi-plus-circle me-2"></i> Nuevo Documento
     </button>
-  </div>
+  </header>
 
-  <div class="mb-4">
+  <section class="mb-4">
     <div class="input-group shadow-sm rounded-pill overflow-hidden border-2 border-slate-100 bg-white focus-within:border-primary transition-all">
       <span class="input-group-text bg-white border-0 ps-3">
         <i class="bi bi-search text-primary"></i>
@@ -22,12 +21,11 @@
         [(ngModel)]="searchTerm" 
         (input)="goToPage(1)">
     </div>
-  </div>
+  </section>
 
-  <div class="row g-4">
+  <main class="row g-4">
     <div class="col-12 col-md-6 col-lg-4" *ngFor="let doc of paginatedDocumentos; trackBy: trackById">
-      
-      <div class="h-full rounded-2xl shadow-sm border border-slate-200 border-l-4 position-relative overflow-hidden transition-all duration-300 hover:shadow-md"
+      <article class="h-full rounded-2xl shadow-sm border border-slate-200 border-l-4 position-relative overflow-hidden transition-all duration-300 hover:shadow-md"
            [ngClass]="{
              'border-l-red-600 bg-red-100': !doc.nombresyapellidos && !doc.nombreOficio, 
              'border-l-blue-600 bg-white': doc.nombresyapellidos || doc.nombreOficio
@@ -45,12 +43,11 @@
             <span class="px-2 py-1 bg-white text-slate-600 rounded-lg text-xs font-bold border border-slate-200 shadow-sm">
               ID: {{ doc.id }}
             </span>
-            
             <button class="btn btn-sm border-2 d-flex align-items-center gap-2 px-3 py-1.5 transition-all duration-300 shadow-sm rounded-xl bg-cyan-100 border-cyan-300 text-cyan-700 hover:bg-cyan-600 hover:border-cyan-600 hover:text-white group" 
                     (click)="editarDocumento(doc.id!)" 
                     title="Abrir en OnlyOffice">
               <i class="bi bi-file-earmark-word-fill fs-6"></i>
-              <span class="fw-bold tracking-tight" style="font-size: 0.7rem;">ABRIR EDITOR</span>
+              <span class="fw-bold tracking-tight" style="font-size: 0.7rem;">ABRIR WORD</span>
             </button>
           </div>
 
@@ -59,13 +56,22 @@
           </h5>
 
           <div class="space-y-1.5 border-t border-slate-200 pt-2" [ngClass]="{'border-red-200': !doc.nombresyapellidos}">
-            <div class="d-flex align-items-center">
-              <div class="w-7 h-7 rounded-lg bg-white d-flex align-items-center justify-content-center me-3 border border-slate-100 shadow-xs">
-                <i class="bi bi-card-heading small" [ngClass]="(!doc.nombresyapellidos) ? 'text-red-600' : 'text-blue-600'"></i>
+            
+            <div class="d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center">
+                <div class="w-7 h-7 rounded-lg bg-white d-flex align-items-center justify-content-center me-2 border border-slate-100 shadow-xs">
+                  <i class="bi bi-card-heading small" [ngClass]="(!doc.nombresyapellidos) ? 'text-red-600' : 'text-blue-600'"></i>
+                </div>
+                <div>
+                  <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;" [ngClass]="{'text-red-500': !doc.nombresyapellidos}">DNI</p>
+                  <p class="fw-semibold text-slate-700 mb-0 small lh-1">{{ doc.dni || '---' }}</p>
+                </div>
               </div>
-              <div>
-                <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;" [ngClass]="{'text-red-500': !doc.nombresyapellidos}">DNI</p>
-                <p class="fw-semibold text-slate-700 mb-0 small lh-1">{{ doc.dni || '---' }}</p>
+              <div class="d-flex align-items-center">
+                <div>
+                  <p class="text-slate-500 mb-0 uppercase fw-bold" style="font-size: 0.6rem;" [ngClass]="{'text-red-500': !doc.nombresyapellidos}">Edad</p>
+                  <p class="fw-semibold text-slate-700 mb-0 small lh-1">{{ doc.edad || '---' }}</p>
+                </div>
               </div>
             </div>
 
@@ -115,24 +121,31 @@
             </div>
           </div>
         </div>
-
-      </div>
+      </article>
     </div>
-  </div>
+  </main>
 
-  <div class="mt-8 flex justify-center" *ngIf="filteredDocumentos.length > 0">
+  <footer class="mt-8 flex justify-center" *ngIf="filteredDocumentos.length > 0">
     <nav class="bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
       <ul class="pagination mb-0 border-0">
         <li class="page-item" [class.disabled]="currentPage === 1">
-          <button class="page-link border-0 rounded-xl mx-1 hover:bg-blue-50" (click)="prevPage()"><i class="bi bi-chevron-left text-primary"></i></button>
+          <button class="page-link border-0 rounded-xl mx-1 hover:bg-blue-50" (click)="prevPage()">
+            <i class="bi bi-chevron-left text-primary"></i>
+          </button>
         </li>
         <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
-          <button class="page-link border-0 rounded-xl mx-1 fw-bold" [ngClass]="page === currentPage ? 'bg-primary text-white' : 'text-slate-600 hover:bg-blue-50'" (click)="goToPage(page)">{{ page }}</button>
+          <button class="page-link border-0 rounded-xl mx-1 fw-bold" 
+                  [ngClass]="page === currentPage ? 'bg-primary text-white' : 'text-slate-600 hover:bg-blue-50'" 
+                  (click)="goToPage(page)">
+            {{ page }}
+          </button>
         </li>
         <li class="page-item" [class.disabled]="currentPage === totalPages">
-          <button class="page-link border-0 rounded-xl mx-1 hover:bg-blue-50" (click)="nextPage()"><i class="bi bi-chevron-right text-primary"></i></button>
+          <button class="page-link border-0 rounded-xl mx-1 hover:bg-blue-50" (click)="nextPage()">
+            <i class="bi bi-chevron-right text-primary"></i>
+          </button>
         </li>
       </ul>
     </nav>
-  </div>
+  </footer>
 </div>

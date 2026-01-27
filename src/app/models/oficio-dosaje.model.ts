@@ -4,10 +4,15 @@ export interface OficioDosaje {
   nro_oficio: string;
   gradoPNP: string;
   nombresyapellidosPNP: string;
-  referencia: string;
-  nro_informe: string;
   documentoId?: number;
-  empleadoId?: number; 
-  archivo?: Blob | File | null; 
+  nro_informe_referencia: string; 
+  archivo?: Blob | File | null;
+
+  personaInvolucrada?: string;
+  dniInvolucrado?: string;
+  edadInvolucrado?: string;
+  tipoMuestra?: string;
+  NumeroInforme?: string;
+  
 }
 

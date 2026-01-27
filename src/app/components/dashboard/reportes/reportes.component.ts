@@ -140,10 +140,16 @@ export class ReportesComponent implements OnInit {
         borderWidth: 1
       }]
     },
-    options: {
-      responsive: true,
-      indexAxis: 'y'
+    options: { 
+  responsive: true,
+  maintainAspectRatio: false, // Permite que el gráfico use el alto que definimos en el CSS/HTML
+  plugins: {
+    legend: {
+      position: 'bottom', // En móvil es mejor tener la leyenda abajo para dar ancho al gráfico
+      labels: { boxWidth: 12, font: { size: 11 } }
     }
+  }
+}
   };
 
   constructor(private reporteService: ReporteService) {}
@@ -289,11 +295,4 @@ export class ReportesComponent implements OnInit {
     });
   }
 
-  descargarExcel() {
-    this.reporteService.descargarExcel(12, 2025);
-  }
-
-  descargarPDF() {
-    this.reporteService.descargarPdf(12, 2025);
-  }
 }

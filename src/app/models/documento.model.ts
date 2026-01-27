@@ -1,9 +1,8 @@
 export interface Documento {
   id?: number;
-  
-  // Datos principales (Coinciden con DocumentoDTO.java)
   nombresyapellidos: string;
   dni: string;
+  edad: string;
   cualitativo?: string; // Puede ser nulo
   cuantitativo?: string;
   nombreDocumento?: string;
@@ -18,4 +17,5 @@ export interface Documento {
   // El archivo no se suele manejar en el JSON estándar al listar, 
   // pero si lo necesitas para alguna lógica específica:
   archivo?: Blob | File | null; 
+  
 }

@@ -73,7 +73,24 @@ export class OficioDosajeComponent implements OnInit, OnDestroy {
   }
 
   abrirOnlyOffice(oficioId: number): void {
-  this.router.navigate(['/dashboard/oficio-dosaje-onlyoffice', oficioId]);
+  Swal.fire({
+    title: 'Preparando documento...',
+    text: 'Reemplazando textos predeterminados en el Word.',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  // 1. Pedimos al servidor que busque "{{FECHA}}", etc., y ponga los datos de la card
+  this.oficioDosajeService.sincronizarDatos(oficioId).subscribe({
+    next: () => {
+      Swal.close();
+      // 2. Ahora abrimos el editor con el archivo ya modificado
+      this.router.navigate(['/dashboard/oficio-dosaje-onlyoffice', oficioId]);
+    },
+    error: (err) => {
+      Swal.fire('Error', 'No se pudo procesar el reemplazo de texto', 'error');
+    }
+  });
 }
   // --- MÉTODOS DE APOYO ---
   nuevoOficio() { this.router.navigate(['/dashboard/oficio-dosaje-registro']); }

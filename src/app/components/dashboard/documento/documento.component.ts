@@ -124,6 +124,7 @@ export class DocumentoComponent implements OnInit {
     return this.documentos.filter(doc => 
       (doc.nombresyapellidos?.toLowerCase().includes(q)) ||
       (doc.dni?.includes(q)) ||
+      (doc.edad?.includes(q)) ||
       (doc.nombreOficio?.toLowerCase().includes(q)) ||
       (doc.tipoMuestra?.toLowerCase().includes(q)) ||
       (doc.cualitativo?.toLowerCase().includes(q)) ||

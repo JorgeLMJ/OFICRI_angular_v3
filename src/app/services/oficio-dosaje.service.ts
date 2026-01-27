@@ -57,4 +57,7 @@ export class OficioDosajeService {
   actualizarTagWord(id: number, tag: string, valor: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/${id}/actualizar-tag`, { tag, valor });
   }
+  sincronizarDatos(id: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}/${id}/sincronizar`, {});
+} 
 }
