@@ -35,4 +35,32 @@ export class AuditoriaComponent implements OnInit {
       alert(json);
     }
   }
+  // Variables para paginación
+currentPage = 1;
+pageSize = 10;
+
+// Método para obtener los datos de la página actual
+get paginatedAuditorias(): Auditoria[] {
+  const startIndex = (this.currentPage - 1) * this.pageSize;
+  return this.auditorias.slice(startIndex, startIndex + this.pageSize);
+}
+
+get totalPages(): number {
+  return Math.ceil(this.auditorias.length / this.pageSize) || 1;
+}
+
+// Generar números de página visibles
+getPageNumbers() {
+  const total = this.totalPages;
+  const current = this.currentPage;
+  const pages = [];
+  for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) {
+    pages.push(i);
+  }
+  return pages;
+}
+
+goToPage(p: number) {
+  this.currentPage = Math.min(Math.max(1, p), this.totalPages);
+}
 }

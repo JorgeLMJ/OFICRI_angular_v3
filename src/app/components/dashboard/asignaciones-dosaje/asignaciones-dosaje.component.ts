@@ -19,7 +19,7 @@ import { SafeUrlPipe } from '../../../pipes/safe-url.pipe'; // 👈 Agregado
   selector: 'app-asignaciones-dosaje',
   templateUrl: './asignaciones-dosaje.component.html',
   standalone: true,
-  imports: [CommonModule, FormsModule, SafeUrlPipe] // 👈 Agregado SafeUrlPipe
+  imports: [CommonModule, FormsModule] // 👈 Agregado SafeUrlPipe
 })
 export class AsignacionesDosajeComponent implements OnInit, AfterViewInit, OnDestroy { // 👈 Implementa hooks
   asignaciones: AsignacionDosaje[] = [];

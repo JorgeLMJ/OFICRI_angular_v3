@@ -1,144 +1,142 @@
-<div class="container mt-4">
-  <!-- Encabezado -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="text-primary">
-      <i class="bi bi-person-badge me-2"></i> Gestión de Empleados
-    </h2>
-    <button class="btn btn-success me-2" (click)="nuevoEmpleado()">
-      <i class="bi bi-person-plus me-2"></i> Nuevo Empleado
+<div class="container mt-4 animate-in fade-in duration-500">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center font-black text-xs uppercase tracking-widest" 
+            (click)="abrirModalNuevo()">
+      <i class="bi bi-person-plus me-2 text-lg"></i> Nuevo Empleado
     </button>
-  </div>
 
-  <!-- 🔎 Buscador -->
-  <div class="mb-3">
-    <input type="text"
-           class="form-control"
-           placeholder="Buscar por nombre, apellido o DNI..."
-           [(ngModel)]="searchTerm"
-           (input)="goToPage(1)">
-  </div>
-
-  <!-- 📋 Grid de Cards (móvil) -->
-  <div class="row g-3 d-block d-md-none">
-    <div class="col-12" *ngFor="let emp of paginatedEmpleados; trackBy: trackById">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-light d-flex justify-content-between align-items-start">
-          <div>
-            <h5 class="mb-1 text-primary">ID: {{ emp.id }}</h5>
-            <p class="mb-1 text-muted small">
-              <i class="bi bi-person me-1"></i> {{ emp.nombre }} {{ emp.apellido }}
-            </p>
-            <p class="mb-0">
-              <strong>Cargo:</strong> {{ emp.cargo }}
-            </p>
-          </div>
-          <div class="btn-group flex-shrink-0" role="group">
-            <button type="button" class="btn btn-sm btn-outline-warning" (click)="editarEmpleado(emp.id!)"><i class="bi bi-pencil-square"></i></button>
-            <button type="button" class="btn btn-sm btn-outline-danger" (click)="confirmDelete(emp)"><i class="bi bi-trash"></i></button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="mb-3">
-            <h6 class="text-secondary mb-2">DNI</h6>
-            <p class="mb-0">{{ emp.dni }}</p>
-          </div>
-          <div class="mb-3">
-            <h6 class="text-secondary mb-2">Teléfono</h6>
-            <p class="mb-0">{{ emp.telefono }}</p>
-          </div>
-          <div class="mb-3">
-            <h6 class="text-secondary mb-2">Estado</h6>
-            <div class="form-check form-switch">
-              <input 
-                class="form-check-input" 
-                type="checkbox" 
-                [checked]="emp.estado === 'Activo'" 
-                (change)="toggleEstado(emp, $event)">
-              <label class="form-check-label">
-                {{ emp.estado === 'Activo' ? 'Activo' : 'Inactivo' }}
-              </label>
-            </div>
-          </div>
-          <div class="mb-3">
-            <h6 class="text-secondary mb-2">Usuario</h6>
-            <span class="badge bg-info">
-              <i class="bi bi-person-circle me-1"></i> {{ emp.usuarioId }}
-            </span>
-          </div>
-        </div>
-      </div>
+    <div class="text-end">
+      <h2 class="text-primary font-black tracking-tight mb-0">
+        GESTIÓN DE EMPLEADOS <i class="bi bi-person-badge ms-2"></i>
+      </h2>
+      <p class="text-muted small mb-0 font-medium">Administración central de personal - Cusco</p>
     </div>
   </div>
 
-  <!-- 📊 Tabla (desktop) -->
-  <div class="table-responsive shadow-sm rounded d-none d-md-block">
-    <table class="table table-hover align-middle">
-      <thead class="table-primary">
-        <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Apellido</th>
-          <th>DNI</th>
-          <th>Cargo</th>
-          <th>Teléfono</th>
-          <th>Estado</th>
-          <th>Usuario</th>
-          <th>Acciones</th>
+  <section class="mb-5">
+    <div class="input-group shadow-xl rounded-2xl overflow-hidden border border-slate-200 bg-white group focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+      <span class="input-group-text bg-white border-0 ps-4">
+        <i class="bi bi-search text-slate-400 group-focus-within:text-primary"></i>
+      </span>
+      <input 
+        type="text" 
+        class="form-control border-0 py-3.5 text-sm font-medium focus:ring-0 shadow-none bg-white" 
+        placeholder="Buscar por nombre, apellido, DNI..." 
+        [(ngModel)]="searchTerm" 
+        (input)="goToPage(1)">
+      
+      <span class="input-group-text bg-white border-0 pe-4 d-none d-md-flex">
+        <span class="badge bg-slate-100 text-slate-500 rounded-pill font-black text-[10px]">
+          {{ filteredEmpleados.length }} TOTAL
+        </span>
+      </span>
+    </div>
+  </section>
+
+  <div class="table-responsive shadow-sm rounded-3xl border d-none d-md-block bg-white overflow-hidden">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr class="bg-slate-100 border-bottom border-slate-300 text-black">
+          <th class="ps-4 py-3.5 text-[11px] font-black uppercase tracking-[0.25em]">ID</th>
+          <th class="py-3.5 text-[11px] font-black uppercase tracking-[0.25em]">Empleado</th>
+          <th class="py-3.5 text-[11px] font-black uppercase tracking-[0.25em] text-center">DNI</th>
+          <th class="py-3.5 text-[11px] font-black uppercase tracking-[0.25em] text-center">Cargo</th>
+          <th class="py-3.5 text-[11px] font-black uppercase tracking-[0.25em] text-center">Teléfono</th>
+          <th class="py-3.5 text-[11px] font-black uppercase tracking-[0.25em] text-center">Estado</th>
+          <th class="pe-4 py-3.5 text-[11px] font-black uppercase tracking-[0.25em] text-end">Acciones</th>
         </tr>
       </thead>
-      <tbody>
-        <tr *ngFor="let emp of paginatedEmpleados; trackBy: trackById">
-          <td>{{ emp.id }}</td>
-          <td>{{ emp.nombre }}</td>
-          <td>{{ emp.apellido }}</td>
-          <td>{{ emp.dni }}</td>
-          <td>{{ emp.cargo }}</td>
-          <td>{{ emp.telefono }}</td>
+      <tbody class="text-sm">
+        <tr *ngFor="let emp of paginatedEmpleados; trackBy: trackById" class="hover:bg-blue-50/40 border-bottom border-slate-100 transition-colors">
+          <td class="ps-4 font-bold text-slate-400">#{{ emp.id }}</td>
           <td>
-            <div class="form-check form-switch">
-              <input 
-                class="form-check-input" 
-                type="checkbox" 
-                [checked]="emp.estado === 'Activo'" 
-                (change)="toggleEstado(emp, $event)">
-              <label class="form-check-label">
-                {{ emp.estado === 'Activo' ? 'Activo' : 'Inactivo' }}
-              </label>
+            <div class="d-flex align-items-center">
+              <div class="h-9 w-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs me-3 border border-blue-200">
+                {{ emp.nombre.charAt(0).toUpperCase() }}
+              </div>
+              <div>
+                <div class="font-bold text-slate-700 leading-tight">{{ emp.nombre }} {{ emp.apellido }}</div>
+                <div class="text-[10px] text-muted">{{ emp.usuarioEmail || 'Sin vínculo' }}</div>
+              </div>
             </div>
           </td>
-          <td>
-            <span class="badge bg-info">
-              <i class="bi bi-person-circle me-1"></i> {{ emp.usuarioId }}
-            </span>
+          <td class="text-center font-mono font-bold text-slate-600">{{ emp.dni }}</td>
+          <td class="text-center">
+            <span class="px-3 py-1 rounded-lg text-[10px] font-black bg-slate-100 text-slate-600 border border-slate-200 uppercase">{{ emp.cargo }}</span>
           </td>
-          <td>
-            <button class="btn btn-sm btn-warning me-2" (click)="editarEmpleado(emp.id!)">
-              <i class="bi bi-pencil-square"></i>
-            </button>
-            <button class="btn btn-sm btn-danger" (click)="confirmDelete(emp)">
-              <i class="bi bi-trash"></i>
-            </button>
+          <td class="text-center text-muted italic text-xs">{{ emp.telefono || '---' }}</td>
+          <td class="text-center">
+            <div class="form-check form-switch d-inline-block">
+              <input class="form-check-input" type="checkbox" [checked]="emp.estado === 'Activo'" (change)="toggleEstado(emp, $event)">
+            </div>
           </td>
-        </tr>
-        <tr *ngIf="filteredEmpleados.length === 0">
-          <td colspan="9" class="text-center text-muted">No se encontraron resultados</td>
+          <td class="pe-4 text-end">
+            <div class="d-flex justify-content-end gap-1">
+              <button (click)="editarEmpleado(emp.id!)" class="p-2 text-amber-500 hover:bg-amber-50 rounded-xl transition-all border-0 bg-transparent shadow-none"><i class="bi bi-pencil-square fs-5"></i></button>
+              <button (click)="confirmDelete(emp)" class="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all border-0 bg-transparent shadow-none"><i class="bi bi-trash fs-5"></i></button>
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <!-- 📄 Paginación (estilo como en la imagen) -->
-  <div class="d-flex justify-content-center mt-4">
-    <nav>
-      <ul class="pagination">
+  <div class="d-md-none space-y-4">
+    <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm" *ngFor="let emp of paginatedEmpleados; trackBy: trackById">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div class="d-flex align-items-center">
+          <div class="h-11 w-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black border border-blue-100 me-3">
+            {{ emp.nombre.charAt(0).toUpperCase() }}
+          </div>
+          <div>
+            <h6 class="font-black text-slate-800 mb-0 tracking-tight">{{ emp.nombre }} {{ emp.apellido }}</h6>
+            <span class="badge bg-slate-100 text-slate-600 border border-slate-200 text-[9px] uppercase tracking-tighter">{{ emp.cargo }}</span>
+          </div>
+        </div>
+        <div class="text-slate-400 font-bold text-xs">#{{ emp.id }}</div>
+      </div>
+      <div class="grid grid-cols-2 gap-3 mb-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+        <div>
+          <label class="text-[9px] font-black text-slate-400 uppercase block mb-1">DNI</label>
+          <span class="text-xs font-mono font-bold text-slate-700">{{ emp.dni }}</span>
+        </div>
+        <div class="text-end">
+          <label class="text-[9px] font-black text-slate-400 uppercase block mb-1">Teléfono</label>
+          <span class="text-xs font-bold text-slate-700">{{ emp.telefono || 'N/A' }}</span>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between align-items-center pt-2">
+        <div class="form-check form-switch d-flex align-items-center">
+          <input class="form-check-input" type="checkbox" [checked]="emp.estado === 'Activo'" (change)="toggleEstado(emp, $event)">
+          <label class="text-[10px] font-black uppercase text-slate-400 ms-2">{{ emp.estado }}</label>
+        </div>
+        <div class="d-flex gap-2">
+          <button (click)="editarEmpleado(emp.id!)" class="h-9 w-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border-0"><i class="bi bi-pencil-fill"></i></button>
+          <button (click)="confirmDelete(emp)" class="h-9 w-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center border-0"><i class="bi bi-trash-fill"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-center mt-5">
+    <nav class="bg-white p-2 rounded-2xl shadow-xl border border-slate-100">
+      <ul class="pagination mb-0 border-0 gap-1">
         <li class="page-item" [class.disabled]="currentPage === 1">
-          <button class="page-link" (click)="prevPage()">Anterior</button>
+          <button class="page-link border-0 rounded-xl w-10 h-10 d-flex align-items-center justify-center transition-all hover:bg-slate-100" (click)="prevPage()">
+            <i class="bi bi-chevron-left text-primary"></i>
+          </button>
         </li>
-        <li class="page-item" *ngFor="let page of getPageNumbers(); trackBy: trackByPage" [class.active]="page === currentPage">
-          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+          <button class="page-link border-0 rounded-xl w-10 h-10 d-flex align-items-center justify-center font-black transition-all" 
+                  [ngClass]="page === currentPage ? 'bg-primary text-white shadow-md shadow-primary/30' : 'text-slate-500 hover:bg-slate-50'" 
+                  (click)="goToPage(page)">
+            {{ page }}
+          </button>
         </li>
         <li class="page-item" [class.disabled]="currentPage === totalPages">
-          <button class="page-link" (click)="nextPage()">Siguiente</button>
+          <button class="page-link border-0 rounded-xl w-10 h-10 d-flex align-items-center justify-center transition-all hover:bg-slate-100" (click)="nextPage()">
+            <i class="bi bi-chevron-right text-primary"></i>
+          </button>
         </li>
       </ul>
     </nav>

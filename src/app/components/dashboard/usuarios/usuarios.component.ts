@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { Usuario } from '../../../models/usuario.model';
 import { UsuarioService } from '../../../services/usuario.service';
 import Swal from 'sweetalert2';
@@ -16,15 +15,25 @@ export class UsuariosComponent implements OnInit {
   usuarios: Usuario[] = [];
   usuariosFiltrados: Usuario[] = [];
   usuariosPaginados: Usuario[] = [];
-
   usuarioForm!: FormGroup;
   usuarioSeleccionado: Usuario | null = null;
-
   terminoBusqueda: string = '';
-
   paginaActual: number = 1;
   registrosPorPagina: number = 5;
   totalPaginas: number = 1;
+
+  // 🚩 CONFIGURACIÓN DE ALERTA TEMPORAL (Sin clics)
+  private Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer)
+      toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+  });
 
   constructor(
     private usuarioService: UsuarioService,
@@ -89,18 +98,15 @@ export class UsuariosComponent implements OnInit {
     this.actualizarPaginacion();
   }
 
-  // Genera las páginas visibles (máx. 5, centradas)
   getPaginasVisibles(): number[] {
     const paginas: number[] = [];
     const maxVisible = 5;
     let start = Math.max(1, this.paginaActual - Math.floor(maxVisible / 2));
     let end = start + maxVisible - 1;
-
     if (end > this.totalPaginas) {
       end = this.totalPaginas;
       start = Math.max(1, end - maxVisible + 1);
     }
-
     for (let i = start; i <= end; i++) {
       paginas.push(i);
     }
@@ -146,39 +152,45 @@ export class UsuariosComponent implements OnInit {
       if (this.usuarioSeleccionado) {
         this.usuarioService.actualizarUsuario(usuario.id!, usuario).subscribe({
           next: () => {
-            Swal.fire('✏️ Actualizado', 'Usuario actualizado correctamente', 'success');
+            // 🚩 ALERTA TEMPORAL DE ACTUALIZACIÓN
+            this.Toast.fire({ icon: 'success', title: 'Usuario actualizado correctamente' });
             this.cargarUsuarios();
-            const modalEl = document.getElementById('usuarioModal');
-            if (modalEl) {
-              const modal = (window as any).bootstrap.Modal.getInstance(modalEl);
-              modal?.hide();
-            }
+            this.cerrarModal();
           },
-          error: () => Swal.fire('❌ Error', 'No se pudo actualizar el usuario', 'error')
+          error: () => this.Toast.fire({ icon: 'error', title: 'No se pudo actualizar' })
         });
       } else {
         this.usuarioService.crearUsuario(usuario).subscribe({
           next: () => {
-            Swal.fire('✅ Creado', 'Usuario creado correctamente', 'success');
+            // 🚩 ALERTA TEMPORAL DE CREACIÓN
+            this.Toast.fire({ icon: 'success', title: 'Usuario creado correctamente' });
             this.cargarUsuarios();
-            const modalEl = document.getElementById('usuarioModal');
-            if (modalEl) {
-              const modal = (window as any).bootstrap.Modal.getInstance(modalEl);
-              modal?.hide();
-            }
+            this.cerrarModal();
           },
-          error: () => Swal.fire('❌ Error', 'El correo ya está registrado', 'error')
+          error: () => this.Toast.fire({ icon: 'error', title: 'El correo ya existe' })
         });
       }
     }
   }
 
+  private cerrarModal() {
+    const modalEl = document.getElementById('usuarioModal');
+    if (modalEl) {
+      const modal = (window as any).bootstrap.Modal.getInstance(modalEl);
+      modal?.hide();
+    }
+  }
+
   eliminarUsuario(id: number): void {
+    // 🚩 Mantenemos la confirmación (porque es una acción peligrosa) 
+    // pero el mensaje de éxito final será automático.
     Swal.fire({
       title: '¿Estás seguro?',
-      text: 'Este usuario será eliminado permanentemente',
+      text: 'No podrás revertir esta acción',
       icon: 'warning',
       showCancelButton: true,
+      confirmButtonColor: '#0d6efd',
+      cancelButtonColor: '#6c757d',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     }).then(result => {
@@ -187,9 +199,10 @@ export class UsuariosComponent implements OnInit {
           next: () => {
             this.usuarios = this.usuarios.filter(u => u.id !== id);
             this.filtrarUsuarios();
-            Swal.fire('✅ Eliminado', 'El usuario ha sido eliminado', 'success');
+            // 🚩 ALERTA TEMPORAL DE ELIMINACIÓN
+            this.Toast.fire({ icon: 'success', title: 'Usuario eliminado' });
           },
-          error: () => Swal.fire('❌ Error', 'No se pudo eliminar: está relacionado con un empleado', 'error')
+          error: () => this.Toast.fire({ icon: 'error', title: 'Error al eliminar' })
         });
       }
     });

@@ -1,60 +1,224 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EmpleadoDTO } from '../../../models/empleado.model';
 import { EmpleadoService } from '../../../services/Empleado.service';
-import { Router } from '@angular/router';
+import { UsuarioService } from '../../../services/usuario.service';
+import { Usuario } from '../../../models/usuario.model';
+import { LayoutService } from '../../../services/layout.service';
 import Swal from 'sweetalert2';
+
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-empleados',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './empleados.component.html'
 })
 export class EmpleadosComponent implements OnInit {
-  empleados: EmpleadoDTO[] = [];
+  // Datos principales
+  empleados: Array<EmpleadoDTO> = [];
+  usuarios: Array<Usuario> = [];
+  usuariosFiltrados: Array<Usuario> = [];
+  usuariosAsignados: number[] = [];
+  
+  // Formulario y UI
+  empleadoForm!: FormGroup;
   searchTerm = '';
+  terminoBusquedaUsuario = '';
+  editMode = false;
 
-  // paginación
+  // Paginación
   currentPage = 1;
-  pageSize = 8;
-  maxVisiblePages = 5; // 👈 Agregado para getPageNumbers
+  pageSize = 6;
+  maxVisiblePages = 5;
+
+  // Configuración de Toast Automático
+  private Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer)
+      toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+  });
 
   constructor(
     private empleadoService: EmpleadoService,
-    private router: Router
+    private usuarioService: UsuarioService,
+    private layoutService: LayoutService,
+    private fb: FormBuilder
   ) {}
 
   ngOnInit(): void {
-    this.loadEmpleados();
+    this.initForm();
+    this.loadInitialData();
   }
 
-  nuevoEmpleado(): void {
-    this.router.navigate(['/dashboard/empleados/empleado-registro']);
+  initForm() {
+    this.empleadoForm = this.fb.group({
+      id: [null],
+      nombre: ['', Validators.required],
+      apellido: ['', Validators.required],
+      dni: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
+      telefono: [''],
+      cargo: ['', Validators.required],
+      estado: ['ACTIVO'],
+      usuarioId: [null, Validators.required],
+      usuarioEmail: ['']
+    });
   }
 
-  editarEmpleado(id: number): void {
-    this.router.navigate(['/dashboard/empleados', id, 'editar']);
-  }
-
-  loadEmpleados(): void {
+  loadInitialData(): void {
     this.empleadoService.getAll().subscribe({
       next: (data) => {
         this.empleados = (data ?? []).map(emp => ({
           ...emp,
-          estado: typeof emp.estado === 'boolean'
-            ? (emp.estado ? 'Activo' : 'Inactivo')
-            : emp.estado
+          estado: typeof emp.estado === 'boolean' ? (emp.estado ? 'Activo' : 'Inactivo') : emp.estado
         }));
+        this.usuariosAsignados = this.empleados.filter(e => e.usuarioId).map(e => e.usuarioId!);
         this.goToPage(1);
-      },
-      error: (err: unknown) => console.error('Error cargando empleados', err)
+      }
+    });
+
+    this.usuarioService.getAll().subscribe(data => {
+      this.usuarios = data;
+      this.filtrarUsuariosModal();
     });
   }
 
-  get totalPages(): number {
-    return Math.max(1, Math.ceil(this.filteredEmpleados.length / this.pageSize));
+  // --- CONTROL MANUAL DE MODALES ---
+
+  private getModal(id: string) {
+    const el = document.getElementById(id);
+    return bootstrap.Modal.getOrCreateInstance(el);
+  }
+
+  abrirModalNuevo() {
+    this.editMode = false;
+    this.empleadoForm.reset({ estado: 'ACTIVO' });
+    this.filtrarUsuariosModal();
+    this.getModal('empleadoModal').show();
+  }
+
+  editarEmpleado(id: number) {
+    this.editMode = true;
+    this.empleadoService.getById(id).subscribe(emp => {
+      this.empleadoForm.patchValue({ ...emp, estado: emp.estado || 'ACTIVO' });
+      this.usuarioService.getById(emp.usuarioId!).subscribe(u => {
+        this.empleadoForm.patchValue({ usuarioEmail: u.email, cargo: u.rol });
+        this.filtrarUsuariosModal(emp.usuarioId);
+        this.getModal('empleadoModal').show();
+      });
+    });
+  }
+
+  abrirSubModalUsuario() {
+    this.getModal('empleadoModal').hide();
+    setTimeout(() => {
+      this.getModal('usuarioSubModal').show();
+    }, 200);
+  }
+
+  cerrarSubModalYVolver() {
+    this.getModal('usuarioSubModal').hide();
+    setTimeout(() => {
+      this.getModal('empleadoModal').show();
+    }, 200);
+  }
+
+  seleccionarUsuario(u: Usuario) {
+    this.empleadoForm.patchValue({ usuarioId: u.id, usuarioEmail: u.email, cargo: u.rol });
+    this.Toast.fire({ icon: 'info', title: `Usuario vinculado` });
+    this.cerrarSubModalYVolver();
+  }
+
+  cerrarTodo() {
+    this.getModal('empleadoModal').hide();
+    this.getModal('usuarioSubModal').hide();
+    this.limpiarBackdrop();
+  }
+
+  limpiarBackdrop() {
+    setTimeout(() => {
+      const backdrops = document.querySelectorAll('.modal-backdrop');
+      backdrops.forEach(b => b.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }, 150);
+  }
+
+  // --- ACCIONES DE DATOS ---
+
+  guardarEmpleado() {
+    if (this.empleadoForm.invalid) return;
+
+    const data = this.empleadoForm.value;
+    const peticion = this.editMode 
+      ? this.empleadoService.update(data.id, data) 
+      : this.empleadoService.create(data);
+
+    peticion.subscribe({
+      next: () => {
+        const msj = this.editMode ? '✏️ Actualizado correctamente' : '✅ Registrado correctamente';
+        this.Toast.fire({ icon: 'success', title: msj });
+        this.layoutService.mostrarToast(msj, 'success');
+        this.cerrarTodo();
+        this.loadInitialData();
+      },
+      error: () => this.Toast.fire({ icon: 'error', title: 'Error al procesar' })
+    });
+  }
+
+  confirmDelete(emp: EmpleadoDTO) {
+    if (!emp.id) return;
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Se eliminará permanentemente a: ${emp.nombre} ${emp.apellido}`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true
+    }).then(res => {
+      if (res.isConfirmed) {
+        this.empleadoService.delete(emp.id!).subscribe({
+          next: () => {
+            const msj = '🗑️ Empleado eliminado correctamente';
+            this.Toast.fire({ icon: 'success', title: msj });
+            this.layoutService.mostrarToast(msj, 'success');
+            this.loadInitialData();
+          },
+          error: () => {
+            this.Toast.fire({ icon: 'error', title: '❌ Error al eliminar' });
+          }
+        });
+      }
+    });
+  }
+
+  toggleEstado(emp: EmpleadoDTO, event: any) {
+    const nuevo = event.target.checked ? 'Activo' : 'Inactivo';
+    this.empleadoService.updateEstado(emp.id!, nuevo).subscribe(() => {
+      this.Toast.fire({ icon: 'success', title: `Estado: ${nuevo}` });
+      emp.estado = nuevo;
+    });
+  }
+
+  // --- MÉTODOS UI ---
+  get filteredEmpleados(): EmpleadoDTO[] {
+    const q = this.searchTerm.toLowerCase().trim();
+    return this.empleados.filter(e => 
+      e.nombre.toLowerCase().includes(q) || e.apellido.toLowerCase().includes(q) || e.dni.includes(q)
+    );
   }
 
   get paginatedEmpleados(): EmpleadoDTO[] {
@@ -62,97 +226,18 @@ export class EmpleadosComponent implements OnInit {
     return this.filteredEmpleados.slice(start, start + this.pageSize);
   }
 
-  goToPage(p: number) {
-    this.currentPage = Math.min(Math.max(1, p), this.totalPages);
-  }
-
+  get totalPages() { return Math.ceil(this.filteredEmpleados.length / this.pageSize); }
+  goToPage(p: number) { this.currentPage = Math.min(Math.max(1, p), this.totalPages || 1); }
   nextPage() { this.goToPage(this.currentPage + 1); }
   prevPage() { this.goToPage(this.currentPage - 1); }
-
-  // ✅ MÉTODO FALTANTE: genera números de página visibles
-  getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const half = Math.floor(this.maxVisiblePages / 2);
-    let start = Math.max(1, this.currentPage - half);
-    let end = Math.min(this.totalPages, start + this.maxVisiblePages - 1);
-    if (end - start + 1 < this.maxVisiblePages) {
-      start = Math.max(1, end - this.maxVisiblePages + 1);
-    }
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
-
-  // ✅ MÉTODO FALTANTE: trackBy para optimización
-  trackById(_: number, item: EmpleadoDTO) {
-    return item.id;
-  }
-
-  trackByPage(_: number, page: number): number {
-    return page;
-  }
-
-  confirmDelete(emp: EmpleadoDTO): void {
-    if (!emp.id) return;
-
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: `Se eliminará al empleado: ${emp.nombre} ${emp.apellido}`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-      reverseButtons: true
-    }).then(result => {
-      if (result.isConfirmed) {
-        this.empleadoService.delete(emp.id!).subscribe({
-          next: () => {
-            this.loadEmpleados();
-            Swal.fire('✅ Eliminado', 'El empleado ha sido eliminado correctamente.', 'success');
-          },
-          error: (err) => {
-            console.error('Error eliminando', err);
-            Swal.fire('❌ Error', 'No se pudo eliminar el empleado, porque el empleado tiene trabajos ya realizados', 'error');
-          }
-        });
-      }
-    });
-  }
-
-  toggleEstado(emp: EmpleadoDTO, event: Event): void {
-    const checkbox = event.target as HTMLInputElement;
-    const nuevoEstado = checkbox.checked ? 'Activo' : 'Inactivo';
-
-    this.empleadoService.updateEstado(emp.id!, nuevoEstado).subscribe({
-      next: () => {
-        const empleadoOriginal = this.empleados.find(e => e.id === emp.id);
-        if (empleadoOriginal) {
-          empleadoOriginal.estado = nuevoEstado;
-        }
-        Swal.fire('✅ Éxito', `El estado ha sido actualizado a ${nuevoEstado.toLowerCase()}.`, 'success');
-      },
-      error: (err: unknown) => {
-        console.error('Error al actualizar estado', err);
-        Swal.fire('❌ Error', 'No se pudo actualizar el estado.', 'error');
-      }
-    });
-  }
-
-  get filteredEmpleados(): EmpleadoDTO[] {
-    const q = this.searchTerm.trim().toLowerCase();
-    if (!q) return [...this.empleados];
-
-    return this.empleados.filter(e => {
-      const terminos = [
-        e.nombre,
-        e.apellido,
-        e.dni,
-        e.usuarioEmail,
-        typeof e.estado === 'boolean' ? (e.estado ? 'Activo' : 'Inactivo') : e.estado
-      ].filter((value): value is string => typeof value === 'string' && value.trim() !== '');
-
-      return terminos.some(term => term.toLowerCase().includes(q));
-    });
+  getPageNumbers() { return Array.from({length: this.totalPages || 1}, (_, i) => i + 1).slice(0, 5); }
+  trackById(_: number, item: EmpleadoDTO) { return item.id; }
+  
+  filtrarUsuariosModal(permitirId?: number) {
+    const term = this.terminoBusquedaUsuario.toLowerCase();
+    this.usuariosFiltrados = this.usuarios.filter(u => 
+      (u.id === permitirId || !this.usuariosAsignados.includes(u.id!)) &&
+      (u.nombre.toLowerCase().includes(term) || u.email.toLowerCase().includes(term))
+    );
   }
 }

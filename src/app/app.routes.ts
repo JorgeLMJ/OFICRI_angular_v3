@@ -7,14 +7,13 @@ import { ForgotPasswordComponent } from './components/forgot-password/forgot-pas
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { HomeComponent } from './components/dashboard/home/home.component';
 import { EmpleadosComponent } from './components/dashboard/empleados/empleados.component';
-import { EmpleadoRegistroComponent } from './components/dashboard/empleado-registro/empleado-registro.component';
 import { UsuariosComponent } from './components/dashboard/usuarios/usuarios.component'; 
 import { DocumentoComponent } from './components/dashboard/documento/documento.component';
 /*import { DocumentoRegistroComponent } from './components/dashboard/documento-registro/documento-registro.component';*/
 import { AsignacionesDosajeComponent } from './components/dashboard/asignaciones-dosaje/asignaciones-dosaje.component';
 import { AsignacionDosajeRegistroComponent } from './components/dashboard/asignacion-dosaje-registro/asignacion-dosaje-registro.component';
-//import { AsignacionesToxicologiaComponent } from './components/dashboard/asignaciones-toxicologia/asignaciones-toxicologia.component';
-//import { AsignacionToxicologiaRegistroComponent } from './components/dashboard/asignacion-toxicologia-registro/asignacion-toxicologia-registro.component';
+import { AsignacionesToxicologiaComponent } from './components/dashboard/asignaciones-toxicologia/asignaciones-toxicologia.component';
+import { AsignacionToxicologiaRegistroComponent } from './components/dashboard/asignacion-toxicologia-registro/asignacion-toxicologia-registro.component';
 import { OficioDosajeComponent } from './components/dashboard/oficio-dosaje/oficio-dosaje.component';
 import { OficioDosajeRegistroComponent } from './components/dashboard/oficio-dosaje-registro/oficio-dosaje-registro.component';
 import { ReportesComponent } from './components/dashboard/reportes/reportes.component';
@@ -35,17 +34,15 @@ export const routes: Routes = [
       { path: '', component: HomeComponent },
       { path: 'usuarios', component: UsuariosComponent },  
       { path: 'empleados', component: EmpleadosComponent },
-      { path: 'empleados/empleado-registro', component: EmpleadoRegistroComponent },
-      { path: 'empleados/:id/editar', component: EmpleadoRegistroComponent },
       { path: 'documento', component: DocumentoComponent },
       /*{ path: 'documento-registro', component: DocumentoRegistroComponent },
       { path: 'documento/:id/editar', component: DocumentoRegistroComponent },*/
       { path: 'asignaciones-dosaje', component: AsignacionesDosajeComponent },
       { path: 'asignacion-dosaje-registro', component: AsignacionDosajeRegistroComponent },
       { path: 'asignacion-dosaje-registro/:id', component: AsignacionDosajeRegistroComponent },
-      //{ path: 'asignaciones-toxicologia', component: AsignacionesToxicologiaComponent },
-      //{ path: 'asignacion-toxicologia-registro', component: AsignacionToxicologiaRegistroComponent },
-      //{ path: 'asignacion-toxicologia-registro/:id', component: AsignacionToxicologiaRegistroComponent },
+      { path: 'asignaciones-toxicologia', component: AsignacionesToxicologiaComponent },
+      { path: 'asignacion-toxicologia-registro', component: AsignacionToxicologiaRegistroComponent },
+      { path: 'asignacion-toxicologia-registro/:id', component: AsignacionToxicologiaRegistroComponent },
       { path: 'oficio-dosaje', component: OficioDosajeComponent },
       { path: 'oficio-dosaje-registro', component: OficioDosajeRegistroComponent },
       { path: 'oficio-dosaje-registro/:id', component: OficioDosajeRegistroComponent },

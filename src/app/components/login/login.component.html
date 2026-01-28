@@ -1,82 +1,149 @@
-<!-- Fondo azul para todo el contenedor -->
-<div class="container-fluid vh-100" style="background-color: #1E90FF;">
+<style>
+  /* Mantengo tus estilos previos intactos */
+  .login-card {
+    border: none;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  }
+  
+  .input-login {
+    height: 48px !important;
+    border-radius: 12px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease;
+  }
+
+  .input-login:focus {
+    border-color: #1a237e !important;
+    box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.1) !important;
+    background-color: white !important;
+  }
+
+  .btn-login {
+    height: 50px;
+    background: #1a237e;
+    border: none;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-login:hover:not(:disabled) {
+    background: #0d124a;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(26, 35, 126, 0.3);
+  }
+
+  .icon-box {
+    width: 60px;
+    height: 60px;
+    background: #1a237e;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 8px 16px rgba(26, 35, 126, 0.2);
+  }
+
+  .glass-overlay {
+    background: linear-gradient(135deg, rgba(26, 35, 126, 0.85) 0%, rgba(13, 18, 74, 0.95) 100%);
+  }
+</style>
+
+<div class="container-fluid vh-100 p-0 overflow-hidden" style="background-color: #f8fafc;">
   <div class="row h-100 g-0">
-    <!-- Columna izquierda (Login) -->
-    <div class="col-md-6 d-flex flex-column justify-content-center align-items-center py-5">
-      <div class="card shadow-lg p-4 w-100" style="max-width: 450px; border-radius: 16px; background: white;">
-        <div class="text-center mb-4">
-          <div class="bg-primary bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
-            <i class="bi bi-shield-lock text-white fs-1"></i>
+    
+    <div class="col-lg-5 col-xl-4 d-flex flex-column justify-content-center px-4 px-md-5 bg-white shadow-2xl z-20">
+      
+      <div class="w-100 mx-auto" style="max-width: 400px;">
+        <div class="text-center mb-5">
+          <div class="icon-box animate__animated animate__bounceIn">
+            <i class="bi bi-shield-check text-white fs-2"></i>
           </div>
-          <h2 class="text-primary fw-bold">Iniciar Sesión</h2>
-          <p class="text-muted">Ingresa tus credenciales para acceder al sistema</p>
+          <h1 class="h3 font-black text-slate-800 uppercase tracking-tighter mb-1">Sistema Integrado</h1>
+          <p class="text-slate-400 font-bold uppercase tracking-widest" style="font-size: 10px;">Dosaje y Toxicología Pericial</p>
         </div>
 
-        <form (ngSubmit)="onSubmit()" [formGroup]="loginForm">
-          <!-- Usuario -->
-          <div class="mb-3">
-            <label for="username" class="form-label fw-semibold">Usuario</label>
+        <form (ngSubmit)="onSubmit()" [formGroup]="loginForm" class="space-y-4">
+          <div class="mb-4 text-start">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Correo </label>
             <div class="input-group">
-              <span class="input-group-text bg-white border-end-0">
-                <i class="bi bi-person text-primary"></i>
+              <span class="input-group-text bg-slate-50 border-end-0 border-slate-200 rounded-l-xl px-3 text-slate-400">
+                <i class="bi bi-envelope-at-fill"></i>
               </span>
-              <input type="text"
-                     class="form-control border-start-0 ps-0"
-                     id="username"
-                     formControlName="username"
-                     placeholder="Ingrese su usuario"
-                     autocomplete="username"
-                     required>
+              <input type="email"
+                     class="form-control input-login border-start-0 ps-0 bg-slate-50"
+                     formControlName="username" name="email" 
+                     autocomplete="email">
             </div>
           </div>
 
-          <!-- Contraseña -->
-          <div class="mb-3">
-            <label for="password" class="form-label fw-semibold">Contraseña</label>
+          <div class="mb-4 text-start">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Clave de Acceso</label>
             <div class="input-group">
-              <span class="input-group-text bg-white border-end-0">
-                <i class="bi bi-lock text-primary"></i>
+              <span class="input-group-text bg-slate-50 border-end-0 border-slate-200 rounded-l-xl px-3 text-slate-400">
+                <i class="bi bi-key-fill"></i>
               </span>
               <input type="password"
-                     class="form-control border-start-0 ps-0"
-                     id="password"
+                     class="form-control input-login border-start-0 ps-0 bg-slate-50"
                      formControlName="password"
-                     placeholder="Ingrese su contraseña"
-                     autocomplete="current-password"
-                     required>
+                     autocomplete="current-password">
             </div>
           </div>
 
-          <!-- Botón -->
-          <div class="d-grid mb-3">
-            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm" [disabled]="loginForm.invalid">
-              <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar sesión
-            </button>
-          </div>
+          <button type="submit" 
+                  class="btn btn-login w-100 text-white shadow-lg d-flex align-items-center justify-content-center gap-2" 
+                  [disabled]="loginForm.invalid">
+            <span>INGRESAR AL PANEL</span>
+            <i class="bi bi-arrow-right-short fs-4"></i>
+          </button>
 
-          <!-- Recuperar contraseña -->
-          <div class="text-center">
-            <a href="/forgot-password" class="text-decoration-none text-primary fw-bold small">
-              ¿Olvidaste tu contraseña?
+          <div class="text-center mt-4">
+            <a href="/forgot-password" class="text-decoration-none text-slate-400 font-bold hover:text-blue-800 transition-colors" style="font-size: 11px; letter-spacing: 0.05em;">
+              ¿PROBLEMAS CON TU CUENTA?
             </a>
           </div>
         </form>
 
-        <!-- Mensaje de error -->
-        <div *ngIf="errorMessage" class="alert alert-danger mt-3 text-center rounded-3">
-          <i class="bi bi-exclamation-triangle me-2"></i>
-          {{ errorMessage }}
+        <div *ngIf="errorMessage" class="mt-4 p-3 bg-red-50 border-l-4 border-red-500 rounded-r-xl animate__animated animate__shakeX">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-octagon-fill text-red-500"></i>
+            <span class="text-red-700 font-black uppercase tracking-tighter" style="font-size: 10px;">{{ errorMessage }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="position-absolute bottom-0 start-0 w-100 p-4 text-center">
+        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-0">© 2026 OFICRI CUSCO - DPTO. CRIMINALÍSTICA</p>
+      </div>
+    </div>
+
+    <div class="col-lg-7 col-xl-8 d-none d-lg-block position-relative overflow-hidden">
+      <div class="w-100 h-100" 
+           style="background-image: url('assets/img/oficri.jpg'); background-size: cover; background-position: center; transform: scale(1.05);">
+      </div>
+      
+      <div class="position-absolute inset-0 glass-overlay d-flex flex-column justify-content-center px-5">
+        <div class="max-w-2xl">
+          <span class="badge bg-warning text-dark font-black py-2 px-3 rounded-lg mb-4 tracking-widest uppercase" style="font-size: 10px;">Acceso Restringido</span>
+          <h2 class="text-white display-3 font-black tracking-tighter leading-none mb-3">
+            OFICRI <span class="text-blue-300">CUSCO</span>
+          </h2>
+          <div class="w-24 h-1 bg-warning mb-4 rounded-full"></div>
+          <p class="text-blue-100 font-medium leading-relaxed max-w-lg" style="font-size: 1.1rem; opacity: 0.8;">
+            Plataforma digital para la gestión y seguimiento técnico de <span class="text-white font-bold">Dosaje Etílico y Toxicología</span>. Garantizando la cadena de custodia y precisión analítica.
+          </p>
         </div>
       </div>
     </div>
 
-    <!-- Columna derecha (Imagen) - Solo visible en desktop -->
-    <div class="col-md-6 d-none d-md-flex justify-content-center align-items-center position-relative">
-      <div class="w-100 h-100" style="background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('assets/img/oficri.jpg'); background-size: cover; background-position: center;"></div>
-      <div class="position-absolute top-50 start-50 translate-middle text-center text-white p-4">
-        <h3 class="fw-bold display-6">Bienvenido a <span class="text-warning">Dosaje y Toxicologia</span></h3>
-        <p class="lead">OFICRI - CUSCO</p>
-      </div>
-    </div>
   </div>
 </div>

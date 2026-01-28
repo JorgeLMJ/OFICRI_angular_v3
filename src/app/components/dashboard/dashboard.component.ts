@@ -31,7 +31,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   menuItems = [
     { title: 'Inicio', icon: 'bi-house-door', route: '/dashboard', roles: ['Administrador'] },
     { title: 'Empleados', icon: 'bi-people', route: '/dashboard/empleados', roles: ['Administrador'] },
-    { title: 'Documentos', icon: 'bi-file-earmark-text', route: '/dashboard/documento', roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia'] },
+    { title: 'Informe', icon: 'bi-file-earmark-text', route: '/dashboard/documento', roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia'] },
     { title: 'Asignaciones Dosaje', icon: 'bi-journal-text', route: '/dashboard/asignaciones-dosaje', roles: ['Administrador', 'Auxiliar de Dosaje','Quimico Farmaceutico'] },
     { title: 'Oficio Dosaje', icon: 'bi-file-earmark-medical', route: '/dashboard/oficio-dosaje', roles: ['Administrador', 'Auxiliar de Dosaje'] },
     { title: 'Asignaciones Toxicología', icon: 'bi-beaker', route: '/dashboard/asignaciones-toxicologia', roles: ['Administrador', 'Auxiliar de Toxicologia','Quimico Farmaceutico'] },

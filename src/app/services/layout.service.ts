@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject,Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -23,4 +23,11 @@ export class LayoutService {
   // 👇 NUEVOS MÉTODOS PARA EL HEADER
   hideHeader() { this.headerVisibleSubject.next(false); }
   showHeader() { this.headerVisibleSubject.next(true); }
+
+  private toastSubject = new Subject<{message: string, type: 'success' | 'error'}>();
+  toastState$ = this.toastSubject.asObservable();
+
+  mostrarToast(message: string, type: 'success' | 'error' = 'success') {
+    this.toastSubject.next({ message, type });
+  }
 }

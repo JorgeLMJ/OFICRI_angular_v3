@@ -1,39 +1,61 @@
 <style>
-  /* Indicador lateral para el menú activo */
+  /* 🔹 Indicador lateral para el menú activo */
   .active-link .active-indicator {
     transform: translateX(0) !important;
+    opacity: 1 !important;
   }
 
-  .active-link i {
+  .active-link {
+    background: linear-gradient(to right, rgba(37, 99, 235, 0.2), transparent);
+    border-right: 4px solid #22d3ee;
+  }
+
+  .active-link i, .active-link span {
     color: #ffffff !important;
+    font-weight: 800 !important;
   }
 
-  /* Scrollbar personalizada */
+  /* 🔹 Scrollbar personalizada estilo pericial */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 5px;
+    width: 4px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #1e3a8a;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #2563eb;
+    background: #22d3ee;
   }
 
-  /* Header compacto con Glassmorphism */
+  /* 💎 Header Renovado: Efecto de cristal translúcido profundo */
   header {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background-color: rgba(30, 58, 138, 0.85) !important;
-    /* Reducimos la altura mínima para asegurar el achatado */
-    height: 75px; 
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    height: 65px; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Animación para la campana de notificaciones */
+  .btn-notification:hover i {
+    animation: ring 0.5s ease;
+  }
+
+  @keyframes ring {
+    0% { transform: rotate(0); }
+    25% { transform: rotate(15deg); }
+    50% { transform: rotate(-15deg); }
+    75% { transform: rotate(10deg); }
+    100% { transform: rotate(0); }
   }
 
   .active-indicator {
-    transition: transform 0.2s ease-in-out;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
   }
 </style>
 
@@ -43,39 +65,42 @@
     class="bg-blue-950 text-blue-100 w-72 transition-all duration-300 ease-in-out z-50 fixed inset-y-0 left-0 shadow-2xl flex flex-col"
     [class]="innerWidth >= 992 ? (isMenuOpen ? 'translate-x-0' : '-translate-x-full') : '-translate-x-full'">
 
-    <div class="p-6 flex items-center space-x-3 bg-blue-900/40">
-      <div class="p-2 bg-blue-500 rounded-lg shadow-lg shadow-blue-400/30">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <div class="p-6 flex items-center space-x-4 border-b border-white/5">
+      <div class="p-2.5 bg-blue-500 rounded-xl shadow-lg shadow-blue-400/30 rotate-3">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white"/>
           <path d="M2 17L12 22L22 17" />
           <path d="M2 12L12 17L22 12" />
         </svg>
       </div>
-      <span class="font-extrabold text-xl tracking-tight text-white">OFICRI</span>
+      <div>
+        <span class="font-black text-2xl tracking-tighter text-white block leading-none">OFICRI</span>
+        <span class="text-[9px] font-black uppercase tracking-[0.3em] text-blue-400">Forensics Lab</span>
+      </div>
     </div>
 
-    <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
+    <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
       <div *ngFor="let item of filteredMenuItems">
         <a 
           [routerLink]="item.route"
-          routerLinkActive="active-link bg-blue-700 text-white shadow-inner"
+          routerLinkActive="active-link"
           [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}"
-          class="group flex items-center px-4 py-3 rounded-xl transition-all duration-200 hover:bg-blue-800/50 hover:text-white relative overflow-hidden text-blue-200">
+          class="group flex items-center px-4 py-3 rounded-xl transition-all duration-200 hover:bg-white/5 relative overflow-hidden text-blue-200">
           
-          <div class="active-indicator absolute left-0 w-1.5 h-6 bg-cyan-400 rounded-r-full transform -translate-x-full transition-transform"></div>
+          <div class="active-indicator absolute left-0 w-1 h-5 bg-cyan-400 rounded-r-full transform -translate-x-full"></div>
           
           <i class="bi {{ item.icon }} text-xl mr-4 group-hover:scale-110 transition-transform"></i>
-          <span class="font-medium text-sm">{{ item.title }}</span>
+          <span class="font-bold text-[13px] uppercase tracking-wide">{{ item.title }}</span>
         </a>
       </div>
     </nav>
 
-    <div class="p-4 bg-blue-900/20 border-t border-blue-800/50">
+    <div class="p-4 bg-black/20 border-t border-white/5">
       <button 
-        class="w-full group bg-blue-900/40 hover:bg-red-600/20 hover:text-red-400 text-blue-300 py-3 px-4 rounded-xl flex items-center justify-center transition-all duration-300 border border-blue-800 hover:border-red-500/50"
+        class="w-full group bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white py-3.5 px-4 rounded-2xl flex items-center justify-center transition-all duration-300 border border-rose-500/20"
         (click)="logout()">
-        <i class="bi bi-box-arrow-right mr-3 text-lg group-hover:translate-x-1 transition-transform"></i>
-        <span class="font-bold text-sm text-white">Cerrar Sesión</span>
+        <i class="bi bi-box-arrow-right mr-3 text-lg group-hover:-translate-x-1 transition-transform"></i>
+        <span class="font-black text-xs uppercase tracking-widest">Cerrar Sesión</span>
       </button>
     </div>
   </aside>
@@ -83,33 +108,36 @@
   <main class="flex-1 flex flex-col h-screen transition-all duration-300 ease-in-out relative" 
         [class]="innerWidth >= 992 ? (isMenuOpen ? 'ml-72' : 'ml-0') : 'ml-0'">
 
-    <header *ngIf="isHeaderVisible" class="border-b border-blue-800/30 px-6 py-2 flex items-center justify-between z-40 sticky top-0 text-white">
-      
-      <div class="flex items-center space-x-4">
+    <header *ngIf="isHeaderVisible" class="px-8 flex items-center justify-between z-40 sticky top-0">
+      <div class="flex items-center space-x-6">
         <button 
-          class="p-1.5 rounded-lg bg-blue-800/30 hover:bg-blue-700/50 text-white transition-colors"
+          class="p-2 rounded-xl bg-white/5 hover:bg-blue-600/40 text-white transition-all active:scale-90 border border-white/10"
           (click)="toggleMenu()">
-          <i class="bi bi-list text-xl"></i>
+          <i class="bi bi-grid-fill text-lg"></i>
         </button>
-        <h1 class="hidden md:block font-bold text-base text-blue-50">{{ getCurrentPageTitle() }}</h1>
+        
+        <div class="hidden lg:block border-l border-white/10 pl-6">
+          <h4 class="font-black text-[10px] uppercase tracking-[0.25em] text-cyan-400 mb-0 leading-none">Módulo Activo</h4>
+          <h1 class="font-bold text-base text-white mt-1">{{ getCurrentPageTitle() }}</h1>
+        </div>
       </div>
 
-      <div class="flex items-center space-x-3">
-        <a class="relative p-1.5 rounded-full bg-blue-800/30 hover:bg-blue-700/50 text-blue-100 transition-all border border-blue-700/30" 
+      <div class="flex items-center space-x-4">
+        <a class="btn-notification relative p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-all border border-white/10 group" 
            routerLink="/dashboard/notificaciones">
-          <i class="bi bi-bell text-lg"></i>
-          <span class="absolute top-1 right-1 flex h-3.5 w-3.5" *ngIf="unreadCount > 0">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-600 text-[8px] items-center justify-center text-white font-bold">{{ unreadCount }}</span>
+          <i class="bi bi-bell-fill text-lg"></i>
+          <span class="absolute -top-1 -right-1 flex h-5 w-5" *ngIf="unreadCount > 0">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-5 w-5 bg-rose-600 text-[10px] items-center justify-center text-white font-black border-2 border-[#0f172a]">{{ unreadCount }}</span>
           </span>
         </a>
 
-        <div class="flex items-center space-x-3 pl-3 border-l border-blue-700/50 ml-1">
-          <div class="hidden sm:flex flex-col items-end text-right leading-tight">
-            <span class="text-xs font-bold text-white">{{ userName }}</span>
-            <span class="text-[9px] text-blue-200 font-medium uppercase tracking-wider">{{ currentRole }}</span>
+        <div class="flex items-center space-x-3 pl-4 border-l border-white/10 ml-2">
+          <div class="hidden sm:flex flex-col items-end leading-tight">
+            <span class="text-[13px] font-black text-white uppercase tracking-tighter">{{ userName }}</span>
+            <span class="text-[9px] text-cyan-400 font-black uppercase tracking-widest">{{ currentRole }}</span>
           </div>
-          <div class="h-8 w-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold border border-blue-400 shadow-md">
+          <div class="h-10 w-10 bg-gradient-to-tr from-blue-600 to-cyan-500 text-white rounded-2xl flex items-center justify-center text-sm font-black border-2 border-white/20 shadow-xl shadow-blue-500/20 transition-transform hover:scale-105">
             {{ userName.charAt(0).toUpperCase() }}
           </div>
         </div>
@@ -125,36 +153,34 @@
   </main>
 </div>
 
-<div class="offcanvas offcanvas-start bg-blue-950 text-blue-100 w-80 border-none shadow-2xl" tabindex="-1" id="offcanvasMenu">
-  <div class="offcanvas-header bg-blue-900 p-4">
+<div class="offcanvas offcanvas-start bg-[#0f172a] text-slate-200 w-80 border-none" tabindex="-1" id="offcanvasMenu">
+  <div class="offcanvas-header bg-slate-900/50 p-6 border-b border-slate-800">
     <div class="flex items-center space-x-3">
-      <div class="p-2 bg-blue-500 rounded-lg">
-        <i class="bi bi-shield-check text-white"></i>
+      <div class="p-2 bg-blue-600 rounded-xl">
+        <i class="bi bi-shield-lock-fill text-white"></i>
       </div>
-      <h5 class="offcanvas-title text-white font-bold tracking-tight" id="offcanvasMenuLabel">SISTEMA OFICRI</h5>
+      <h5 class="offcanvas-title text-white font-black tracking-tight" id="offcanvasMenuLabel">SISTEMA OFICRI</h5>
     </div>
-    <button type="button" class="btn-close btn-close-white scale-75 shadow-none" data-bs-dismiss="offcanvas"></button>
+    <button type="button" class="btn-close btn-close-white shadow-none opacity-50" data-bs-dismiss="offcanvas"></button>
   </div>
   
-  <div class="offcanvas-body p-4 pt-6 flex flex-col bg-blue-950">
+  <div class="offcanvas-body p-6 flex flex-col">
     <ul class="space-y-2 flex-1">
       <li *ngFor="let item of filteredMenuItems">
-        <a 
-          class="flex items-center px-4 py-3 rounded-xl text-blue-200 hover:bg-blue-700 hover:text-white transition-all border border-transparent"
-          [routerLink]="item.route"
-          data-bs-dismiss="offcanvas">
-          <i class="bi {{ item.icon }} text-lg mr-4"></i> 
-          <span class="font-semibold text-sm">{{ item.title }}</span>
+        <a class="flex items-center px-5 py-4 rounded-2xl text-slate-400 hover:bg-blue-600 hover:text-white transition-all font-bold text-sm uppercase tracking-wide"
+           [routerLink]="item.route"
+           data-bs-dismiss="offcanvas">
+          <i class="bi {{ item.icon }} text-xl mr-4"></i> 
+          {{ item.title }}
         </a>
       </li>
     </ul>
 
-    <button 
-      class="mt-auto w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white py-3 px-4 rounded-2xl flex items-center justify-center transition-all duration-300 border border-red-500/30 mb-2"
-      (click)="logout()" 
-      data-bs-dismiss="offcanvas">
-      <i class="bi bi-box-arrow-right mr-3 text-lg"></i>
-      <span class="font-bold text-sm">Cerrar Sesión</span>
+    <button class="mt-auto w-full bg-rose-600 text-white py-4 px-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-rose-600/20"
+            (click)="logout()" 
+            data-bs-dismiss="offcanvas">
+      <i class="bi bi-box-arrow-right mr-3"></i>
+      Cerrar Sesión
     </button>
   </div>
 </div>

@@ -122,4 +122,26 @@ export class HomeComponent implements OnInit, OnDestroy {
   isAdministrador(): boolean {
     return this.currentRole === 'Administrador';
   }
+  getStatCards() {
+  const isDocAdmin = this.isAdministrador();
+  return [
+    { label: 'Usuarios', value: this.stats.usuarios, icon: 'bi-people-fill', bgLight: 'bg-blue-50', textColor: 'text-blue-600', bgMain: 'bg-blue-600' },
+    { label: 'Empleados', value: this.stats.empleados, icon: 'bi-person-badge-fill', bgLight: 'bg-emerald-50', textColor: 'text-emerald-600', bgMain: 'bg-emerald-600' },
+    { label: 'Documentos', value: this.stats.documentos, icon: 'bi-file-earmark-text-fill', bgLight: 'bg-cyan-50', textColor: 'text-cyan-600', bgMain: 'bg-cyan-600' },
+    { label: 'Notificaciones', value: this.stats.notificaciones, icon: 'bi-bell-fill', bgLight: 'bg-rose-50', textColor: 'text-rose-600', bgMain: 'bg-rose-600' },
+    // Solo visibles para roles específicos si lo deseas, o todos
+    { label: 'Dosajes', value: this.stats.dosajes, icon: 'bi-capsule', bgLight: 'bg-amber-50', textColor: 'text-amber-600', bgMain: 'bg-amber-600' },
+    { label: 'Toxicología', value: this.stats.toxicologia, icon: 'bi-flask-fill', bgLight: 'bg-indigo-50', textColor: 'text-indigo-600', bgMain: 'bg-indigo-600' }
+  ].slice(0, isDocAdmin ? 8 : 4); // Limita las cards si no es admin
+}
+
+getQuickActions() {
+  return [
+    { title: 'Empleados', desc: 'Gestión de legajos y cargos', icon: 'bi-people', route: '/dashboard/empleados', roles: ['Administrador'], bgLight: 'bg-blue-50', textColor: 'text-blue-600' },
+    { title: 'Informes', desc: 'Redacción de informes periciales', icon: 'bi-file-earmark-word', route: '/dashboard/documento', roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia'], bgLight: 'bg-emerald-50', textColor: 'text-emerald-600' },
+    { title: 'Dosaje Etílico', desc: 'Control de muestras y resultados', icon: 'bi-journal-check', route: '/dashboard/asignaciones-dosaje', roles: ['Administrador', 'Auxiliar de Dosaje', 'Quimico Farmaceutico'], bgLight: 'bg-amber-50', textColor: 'text-amber-600' },
+    { title: 'Toxicología', desc: 'Asignaciones de laboratorio químico', icon: 'bi-beaker', route: '/dashboard/asignaciones-toxicologia', roles: ['Administrador', 'Auxiliar de Toxicologia', 'Quimico Farmaceutico'], bgLight: 'bg-rose-50', textColor: 'text-rose-600' },
+    { title: 'Estadísticas', desc: 'Métricas y reportes mensuales', icon: 'bi-bar-chart-line', route: '/dashboard/reportes', roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia', 'Quimico Farmaceutico'], bgLight: 'bg-indigo-50', textColor: 'text-indigo-600' }
+  ];
+}
 }

@@ -1,166 +1,161 @@
-<div class="container-fluid py-4 bg-light min-vh-100">
+<div class="container-fluid animate-in fade-in duration-700 pb-5">
 
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <h3 class="fw-bold text-dark mb-1">Centro de Notificaciones</h3>
-          <p class="text-muted mb-0">Gestiona tus alertas de Dosaje y Toxicología</p>
+  <header class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-5 gap-3">
+    <div>
+      <h2 class="text-primary font-black tracking-tighter mb-1 d-flex align-items-center">
+        <span class="p-2 bg-primary/10 rounded-xl me-3">
+          <i class="bi bi-bell-fill text-primary"></i>
+        </span>
+        CENTRO DE NOTIFICACIONES
+      </h2>
+      <p class="text-slate-500 small font-medium ps-1 mb-0">
+        Gestión de alertas en tiempo real de Dosaje y Toxicología
+      </p>
+    </div>
+    
+    <a routerLink="/dashboard" class="bg-white hover:bg-slate-50 text-slate-600 px-4 py-2.5 rounded-2xl shadow-sm border border-slate-200 transition-all flex items-center font-black text-[11px] uppercase tracking-widest active:scale-95">
+      <i class="bi bi-arrow-left me-2"></i> Volver al Panel
+    </a>
+  </header>
+
+  <div *ngIf="loading" class="text-center py-10">
+    <div class="spinner-grow text-primary mb-3" role="status"></div>
+    <h6 class="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">Sincronizando alertas...</h6>
+  </div>
+
+  <div *ngIf="!loading && notifications.length === 0" class="text-center py-10 animate-in zoom-in duration-500">
+    <div class="bg-white d-inline-block p-5 rounded-[3.5rem] shadow-sm border border-dashed border-slate-200 mb-4">
+      <i class="bi bi-bell-slash display-4 text-slate-200"></i>
+    </div>
+    <h5 class="text-slate-600 font-black tracking-tight">Estás al día</h5>
+    <p class="text-slate-400 font-medium small mt-2">No tienes nuevas notificaciones pendientes por procesar.</p>
+  </div>
+
+  <div class="d-md-none space-y-4" *ngIf="!loading && notifications.length > 0">
+    <div *ngFor="let n of paginatedNotifications"
+         (click)="markAsRead(n)"
+         class="bg-white p-4 rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden position-relative transition-all active:scale-[0.98]"
+         [class.border-primary-subtle]="!n.read">
+
+      <div *ngIf="!n.read" class="position-absolute start-0 top-0 bottom-0 bg-primary animate-pulse" style="width: 6px;"></div>
+
+      <div class="d-flex align-items-center mb-3">
+        <div class="h-10 w-10 rounded-xl bg-primary text-white d-flex align-items-center justify-content-center font-black text-xs border-2 border-white shadow-sm me-3">
+          {{ n.emisor.nombre.charAt(0) }}{{ n.emisor.apellido.charAt(0) }}
         </div>
-        <a routerLink="/dashboard" class="btn btn-outline-secondary rounded-pill px-4">
-          <i class="bi bi-arrow-left me-2"></i>Volver
-        </a>
+        <div class="overflow-hidden">
+          <h6 class="font-black text-slate-800 uppercase mb-0 tracking-tighter text-truncate">{{ n.emisor.nombre }} {{ n.emisor.apellido }}</h6>
+          <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ n.emisor.cargo }}</span>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border text-primary" role="status"></div>
-    <p class="mt-3 text-muted fw-medium">Sincronizando...</p>
-  </div>
+      <p class="text-sm text-slate-700 mb-3" [class.font-black]="!n.read">
+        {{ n.message }}
+      </p>
 
-  <div *ngIf="!loading && notifications.length === 0" class="text-center py-5">
-    <div class="bg-white rounded-circle shadow-sm d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-      <i class="bi bi-bell-slash text-muted fs-2"></i>
-    </div>
-    <h5 class="text-dark">Estás al día</h5>
-    <p class="text-muted">No tienes nuevas notificaciones pendientes.</p>
-  </div>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <span class="badge bg-blue-50 text-blue-600 border border-blue-100 font-black text-[9px] uppercase tracking-tighter px-3 py-1.5 rounded-pill">{{ n.area }}</span>
+        <span class="badge bg-slate-100 text-slate-500 border border-slate-200 font-mono text-[9px] px-3 py-1.5 rounded-pill">#{{ n.asignacionId || 'N/A' }}</span>
+      </div>
 
-  <div class="d-block d-md-none" *ngIf="!loading && notifications.length > 0">
-    <div class="space-y-3">
-      <div *ngFor="let n of paginatedNotifications"
-           (click)="markAsRead(n)"
-           class="card border-0 shadow-sm rounded-4 p-3 mb-3 cursor-pointer position-relative"
-           [class.bg-primary-subtle]="!n.read"
-           [class.bg-white]="n.read">
-
-        <div *ngIf="!n.read" class="position-absolute start-0 top-0 bottom-0 bg-primary" style="width: 4px;"></div>
-
-        <div class="d-flex align-items-center mb-2">
-          <div class="flex-shrink-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-               style="width: 36px; height: 36px; font-weight: bold; font-size: 0.85rem;">
-            {{ n.emisor.nombre.charAt(0) }}{{ n.emisor.apellido.charAt(0) }}
-          </div>
-          <div class="d-flex flex-column">
-            <span class="text-dark" [class.fw-bold]="!n.read">{{ n.emisor.nombre }} {{ n.emisor.apellido }}</span>
-            <span class="text-muted small" style="font-size: 0.75rem;">{{ n.emisor.cargo }}</span>
-          </div>
-        </div>
-
-        <div class="mb-2">
-          <span class="text-dark" [class.fw-bold]="!n.read">{{ n.message }}</span>
-        </div>
-
-        <div class="d-flex gap-2 mb-2">
-          <span class="badge rounded-pill bg-light text-dark border">{{ n.area }}</span>
-          <span class="badge rounded-pill bg-secondary-subtle text-secondary">#{{ n.asignacionId || 'N/A' }}</span>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="text-muted small">{{ n.timestamp | date:'dd MMM yyyy HH:mm' }}</span>
-          <div *ngIf="n.read" class="text-success small"><i class="bi bi-check2-all me-1"></i>Leída</div>
+      <div class="d-flex justify-content-between align-items-center pt-3 border-t border-slate-50">
+        <span class="text-[10px] font-bold text-slate-400">{{ n.timestamp | date:'dd MMM yyyy HH:mm' }}</span>
+        <div *ngIf="n.read" class="text-emerald-500 font-black text-[9px] uppercase tracking-widest">
+          <i class="bi bi-check2-all me-1 fs-6"></i> Revisada
         </div>
       </div>
     </div>
   </div>
 
   <div class="d-none d-md-block" *ngIf="!loading && notifications.length > 0">
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="bg-light">
-            <tr>
-              <th class="ps-4 text-uppercase text-muted small fw-bold">ID</th>
-              <th class="text-uppercase text-muted small fw-bold">Emisor</th>
-              <th class="text-uppercase text-muted small fw-bold">Mensaje</th>
-              <th class="text-uppercase text-muted small fw-bold">Área / Ref</th>
-              <th class="text-uppercase text-muted small fw-bold text-end pe-4">Fecha</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let n of paginatedNotifications" 
-                (click)="markAsRead(n)"
-                class="cursor-pointer position-relative"
-                [class.bg-primary-subtle]="!n.read"
-                [class.bg-white]="n.read">
-              
-              <td class="ps-4 border-bottom border-gray-100">
-                <span *ngIf="!n.read" class="position-absolute start-0 top-0 bottom-0 bg-primary" style="width: 4px;"></span>
-                <span class="text-muted small">#{{ n.id }}</span>
-              </td>
+    <div class="table-responsive shadow-xl rounded-[2.5rem] border-0 bg-white overflow-hidden">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr class="bg-slate-50 border-bottom border-slate-100">
+            <th class="ps-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</th>
+            <th class="py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Emisor</th>
+            <th class="py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Mensaje de Alerta</th>
+            <th class="py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Área / Referencia</th>
+            <th class="pe-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-end">Fecha</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm font-medium border-0">
+          <tr *ngFor="let n of paginatedNotifications" 
+              (click)="markAsRead(n)"
+              class="cursor-pointer transition-colors hover:bg-blue-50/30 border-bottom border-slate-50"
+              [class.bg-blue-50]="!n.read">
+            
+            <td class="ps-4">
+              <div class="d-flex align-items-center">
+                <span *ngIf="!n.read" class="h-2 w-2 bg-primary rounded-full me-2 animate-pulse"></span>
+                <span class="font-mono text-[10px] text-slate-400">#{{ n.id }}</span>
+              </div>
+            </td>
 
-              <td class="border-bottom border-gray-100">
-                <div class="d-flex align-items-center">
-                  <div class="flex-shrink-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                       style="width: 36px; height: 36px; font-weight: bold; font-size: 0.85rem;">
-                    {{ n.emisor.nombre.charAt(0) }}{{ n.emisor.apellido.charAt(0) }}
-                  </div>
-                  <div class="d-flex flex-column">
-                    <span class="text-dark" [class.fw-bold]="!n.read">{{ n.emisor.nombre }} {{ n.emisor.apellido }}</span>
-                    <span class="text-muted small" style="font-size: 0.75rem;">{{ n.emisor.cargo }}</span>
-                  </div>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="h-9 w-9 rounded-xl bg-slate-100 text-slate-500 d-flex align-items-center justify-content-center me-3 border border-slate-200 font-black text-xs uppercase shadow-xs">
+                  {{ n.emisor.nombre.charAt(0) }}{{ n.emisor.apellido.charAt(0) }}
                 </div>
-              </td>
-
-              <td class="border-bottom border-gray-100">
-                <span class="text-dark" [class.fw-bold]="!n.read">{{ n.message }}</span>
-              </td>
-
-              <td class="border-bottom border-gray-100">
-                <div class="d-flex gap-2">
-                  <span class="badge rounded-pill bg-light text-dark border">{{ n.area }}</span>
-                  <span class="badge rounded-pill bg-secondary-subtle text-secondary">#{{ n.asignacionId || 'N/A' }}</span>
+                <div class="d-flex flex-column">
+                  <span class="text-slate-800 uppercase tracking-tighter" [class.font-black]="!n.read">{{ n.emisor.nombre }} {{ n.emisor.apellido }}</span>
+                  <span class="text-[9px] text-slate-400 font-black uppercase tracking-widest">{{ n.emisor.cargo }}</span>
                 </div>
-              </td>
+              </div>
+            </td>
 
-              <td class="text-end pe-4 border-bottom border-gray-100">
-                <div class="d-flex flex-column align-items-end">
-                  <span class="text-dark small fw-medium">{{ n.timestamp | date:'dd MMM yyyy' }}</span>
-                  <span class="text-muted small">{{ n.timestamp | date:'HH:mm' }}</span>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            <td>
+              <span class="text-slate-700" [class.font-black]="!n.read">{{ n.message }}</span>
+            </td>
+
+            <td>
+              <div class="d-flex gap-2">
+                <span class="badge bg-slate-100 text-slate-600 font-black text-[9px] uppercase border border-slate-200 px-2 py-1">{{ n.area }}</span>
+                <span class="badge bg-blue-50 text-blue-600 font-mono text-[9px] border border-blue-100 px-2 py-1">ID: #{{ n.asignacionId || 'N/A' }}</span>
+              </div>
+            </td>
+
+            <td class="pe-4 text-end">
+              <div class="d-flex flex-column text-[11px]">
+                <span class="font-black text-slate-700">{{ n.timestamp | date:'dd MMM, yyyy' }}</span>
+                <span class="text-slate-400">{{ n.timestamp | date:'HH:mm' }} hrs</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <div *ngIf="!loading && notifications.length > itemsPerPage" class="mt-5 d-flex justify-content-center">
-  <nav class="bg-white p-1 rounded-pill shadow-sm border border-slate-200">
-    <ul class="pagination mb-0 border-0 align-items-center">
-      
-      <li class="page-item" [class.disabled]="currentPage === 1">
-        <button class="page-link border-0 rounded-circle mx-1 d-flex align-items-center justify-content-center" 
-                style="width: 32px; height: 32px;"
-                (click)="changePage(currentPage - 1)">
-          <i class="bi bi-chevron-left text-primary"></i>
-        </button>
-      </li>
+  <footer class="mt-5 d-flex justify-content-center flex-column align-items-center gap-3" *ngIf="!loading && notifications.length > itemsPerPage">
+    <nav class="bg-white p-2 rounded-2xl shadow-xl border border-slate-100">
+      <ul class="pagination mb-0 border-0 align-items-center gap-2">
+        
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link border-0 rounded-xl w-10 h-10 d-flex align-items-center justify-center transition-all hover:bg-slate-100" 
+                  (click)="changePage(currentPage - 1)">
+            <i class="bi bi-chevron-left text-primary"></i>
+          </button>
+        </li>
 
-      <li class="px-3">
-        <span class="text-slate-600 fw-bold small">
-          {{ currentPage }} <span class="text-slate-400 mx-1">/</span> {{ totalPages }}
-        </span>
-      </li>
+        <li class="px-3">
+          <span class="text-slate-600 font-black text-xs uppercase tracking-widest">
+            Pág. {{ currentPage }} <span class="text-slate-300 mx-1">/</span> {{ totalPages }}
+          </span>
+        </li>
 
-      <li class="page-item" [class.disabled]="currentPage === totalPages">
-        <button class="page-link border-0 rounded-circle mx-1 d-flex align-items-center justify-content-center" 
-                style="width: 32px; height: 32px;"
-                (click)="changePage(currentPage + 1)">
-          <i class="bi bi-chevron-right text-primary"></i>
-        </button>
-      </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link border-0 rounded-xl w-10 h-10 d-flex align-items-center justify-center transition-all hover:bg-slate-100" 
+                  (click)="changePage(currentPage + 1)">
+            <i class="bi bi-chevron-right text-primary"></i>
+          </button>
+        </li>
 
-    </ul>
-  </nav>
-</div>
-
-<div *ngIf="!loading && notifications.length > 0" class="text-center mt-2">
-  <small class="text-slate-400 fw-medium" style="font-size: 0.7rem;">
-    Total: {{ notifications.length }} notificaciones
-  </small>
-</div>
+      </ul>
+    </nav>
+    <small class="text-slate-400 font-black uppercase text-[10px] tracking-[0.2em]">
+      Mostrando {{ paginatedNotifications.length }} de {{ notifications.length }} registros
+    </small>
+  </footer>
 
 </div>

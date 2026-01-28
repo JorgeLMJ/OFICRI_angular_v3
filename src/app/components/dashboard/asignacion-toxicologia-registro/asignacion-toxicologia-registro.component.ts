@@ -1,6 +1,6 @@
 // src/app/components/dashboard/asignacion-toxicologia-registro/asignacion-toxicologia-registro.component.ts
 
-/*import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -152,7 +152,7 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
         if (data.documentoId) {
           this.documentoService.getDocumentoById(data.documentoId).subscribe({
             next: (doc) => {
-              this.documentoSeleccionadoInfo = `ID ${doc.id} - Oficio ${doc.nroOficio}`;
+              //this.documentoSeleccionadoInfo = `ID ${doc.id} - Oficio ${doc.nroOficio}`;
             },
             error: (err) => {
               console.error('Error al cargar documento:', err);
@@ -207,15 +207,7 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
     return this.documentosAsignados.includes(documentoId);
   }
 
-  filtrarDocumentos() {
-    const term = this.terminoBusquedaDocumento.toLowerCase();
-    this.documentosFiltrados = this.documentos.filter(doc =>
-      doc.nroOficio.toLowerCase().includes(term) ||
-      (doc.nombreDocumento || '').toLowerCase().includes(term) ||
-      `${doc.nombres} ${doc.apellidos}`.toLowerCase().includes(term)
-    );
-    this.aplicarFiltroYOrden();
-  }
+
 
   aplicarFiltroYOrden() {
     let filtrados = [...this.documentosFiltrados];
@@ -246,7 +238,7 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
 
   seleccionarDocumento(doc: Documento) {
     this.asignacionForm.get('documentoId')?.setValue(doc.id);
-    this.documentoSeleccionadoInfo = `ID ${doc.id} - Oficio ${doc.nroOficio}`;
+    //this.documentoSeleccionadoInfo = `ID ${doc.id} - Oficio ${doc.nroOficio}`;
     this.closeDocumentoModal();
   }
 
@@ -308,4 +300,4 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
     }
     return pages;
   }
-}*/
+}
