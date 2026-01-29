@@ -274,35 +274,39 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
     }
   }
 
-  onSubmit(): void {
-    if (this.asignacionForm.invalid) {
-      Swal.fire('Formulario inválido', 'Por favor, complete todos los campos.', 'warning');
-      return;
-    }
-
-    const formValue: AsignacionToxicologia = this.asignacionForm.getRawValue();
-    
-    const currentUser = this.authService.getCurrentUser();
-    const dto = {
-      ...formValue,
-      emisorId: currentUser?.empleadoId
-    };
-
-    const request$ = this.editMode
-      ? this.asignacionToxService.actualizar(this.currentId!, dto)
-      : this.asignacionToxService.crear(dto);
-
-    request$.subscribe({
-      next: (savedAsignacion) => {
-        Swal.fire('Éxito', 'Asignación guardada correctamente.', 'success');
-        this.router.navigate(['/dashboard/asignaciones-toxicologia']);
-      },
-      error: (err) => {
-        console.error('Error guardando asignación:', err);
-        Swal.fire('Error', 'No se pudo guardar la asignación.', 'error');
-      }
-    });
+ onSubmit(): void {
+  if (this.asignacionForm.invalid) {
+    Swal.fire('Formulario inválido', 'Por favor, complete todos los campos.', 'warning');
+    return;
   }
+
+  const formValue: AsignacionToxicologia = this.asignacionForm.getRawValue();
+  const currentUser = this.authService.getCurrentUser();
+  const dto = { ...formValue, emisorId: currentUser?.empleadoId };
+
+  const request$ = this.editMode
+    ? this.asignacionToxService.actualizar(this.currentId!, dto)
+    : this.asignacionToxService.crear(dto);
+
+  request$.subscribe({
+    next: (savedAsignacion) => {
+      Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: 'Datos guardados en BD. Abriendo editor de Word...',
+        timer: 1500,
+        showConfirmButton: false
+      }).then(() => {
+        // ✅ Redirigir directamente al editor de OnlyOffice después de guardar
+        this.router.navigate(['/dashboard/onlyoffice-editor', formValue.documentoId]);
+      });
+    },
+    error: (err) => {
+      console.error('Error guardando asignación:', err);
+      Swal.fire('Error', 'No se pudo guardar la asignación.', 'error');
+    }
+  });
+}
 
   cancelar(): void {
     this.router.navigate(['/dashboard/asignaciones-toxicologia']);
