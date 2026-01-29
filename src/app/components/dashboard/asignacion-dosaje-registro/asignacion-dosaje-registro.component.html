@@ -48,13 +48,27 @@
               <h6 class="text-secondary fw-bold border-bottom pb-2 mb-3 text-uppercase small">
                 <i class="bi bi-funnel me-2"></i>Laboratorio
               </h6>
-              <div class="card bg-light border-0 p-3 mb-3">
-                <label class="form-label small fw-bold text-primary mb-1">VALOR CUANTITATIVO</label>
+              <div class="card bg-light border-0 p-3 mb-3" 
+                [ngClass]="{'opacity-75': !puedeEditarResultadoCuantitativo()}">
+                <label class="form-label small fw-bold mb-1" 
+                      [ngClass]="puedeEditarResultadoCuantitativo() ? 'text-primary' : 'text-secondary'">
+                    VALOR CUANTITATIVO 
+                    <i *ngIf="!puedeEditarResultadoCuantitativo()" class="bi bi-lock-fill ms-1"></i>
+                </label>
+                
                 <div class="input-group">
-                  <input type="number" class="form-control form-control-lg border-0 bg-white fw-bold" formControlName="cualitativo" placeholder="0.00" step="0.01">
-                  <span class="input-group-text bg-white border-0 fw-bold text-primary">G/L</span>
+                    <input type="number" 
+                          class="form-control form-control-lg border-0 fw-bold shadow-none" 
+                          [ngClass]="puedeEditarResultadoCuantitativo() ? 'bg-white' : 'bg-secondary-subtle text-muted'"
+                          formControlName="cualitativo" 
+                          placeholder="0.00" 
+                          step="0.01">
+                    <span class="input-group-text border-0 fw-bold" 
+                          [ngClass]="puedeEditarResultadoCuantitativo() ? 'bg-white text-primary' : 'bg-secondary-subtle text-secondary'">
+                        G/L
+                    </span>
                 </div>
-              </div>
+</div>
               <div class="row g-2" *ngIf="puedeEditarEstadoCampo()">
                 <div class="col-6">
                   <button type="button" class="btn w-100 fw-bold small text-uppercase py-2 shadow-sm"
@@ -74,9 +88,11 @@
             </div>
 
             <div class="d-grid gap-2 pt-3 border-top pb-5 mb-5">
-              <button type="submit" class="btn btn-primary btn-lg shadow-sm" [disabled]="asignacionForm.invalid">
-                <i class="bi bi-cloud-arrow-up-fill me-2"></i> {{ editMode ? 'Actualizar' : 'Confirmar' }} Registro
-              </button>
+              <button type="submit" class="btn btn-primary btn-lg shadow-sm" [disabled]="asignacionForm.invalid || cargandoVisor">
+  <span *ngIf="cargandoVisor" class="spinner-border spinner-border-sm me-2"></span>
+  <i *ngIf="!cargandoVisor" class="bi bi-cloud-arrow-up-fill me-2"></i> 
+  {{ editMode ? 'Actualizar' : 'Confirmar' }} Registro
+</button>
               <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">Cancelar</button>
             </div>
           </form>

@@ -62,38 +62,46 @@ export class DocumentoComponent implements OnInit {
   }
 
   nuevoDocumento(): void {
-    this.layoutService.closeMenu();
-    Swal.fire({
-      title: 'Creando documento...',
-      text: 'Por favor espere',
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading()
-    });
+  this.layoutService.closeMenu();
+  
+  const cargo = this.authService.getUserCargo() || ''; // Obtenemos el cargo actual
 
-    this.documentoService.crearNuevoDocumentoVacio().subscribe({
-      next: (nuevoId) => {
-        Swal.close();
-        this.router.navigate(['/dashboard/onlyoffice-editor', nuevoId]);
-      },
-      error: (err) => {
-        Swal.fire('Error', 'No se pudo crear el documento', 'error');
-        this.layoutService.openMenu(); 
-      }
-    });
-  }
+  Swal.fire({
+    title: 'Iniciando Expediente',
+    text: `Preparando plantilla para ${cargo}...`,
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  // Enviamos el cargo o área como parámetro opcional si tu backend lo requiere
+  this.documentoService.crearNuevoDocumentoVacio().subscribe({
+    next: (nuevoId) => {
+      Swal.close();
+      // El backend ya vinculó el empleadoId mediante el token JWT en el interceptor
+      this.router.navigate(['/dashboard/onlyoffice-editor', nuevoId]);
+    },
+    error: (err) => {
+      Swal.fire('Error', 'No se pudo establecer conexión con el servidor de informes', 'error');
+      this.layoutService.openMenu(); 
+    }
+  });
+}
 
   editarDocumento(id: number): void {
     this.router.navigate(['/dashboard/onlyoffice-editor', id]);
   }
 
   loadDocumentos(): void {
-    this.documentoService.getDocumentos().subscribe({
-      next: (data) => {
-        this.documentos = (data || []).sort((a, b) => (b.id || 0) - (a.id || 0));
-      },
-      error: (err) => console.error('Error cargando documentos', err)
-    });
-  }
+  this.documentoService.getDocumentos().subscribe({
+    next: (data) => {
+      // La data ya viene filtrada por el servidor: 
+      // Si soy Ana Lucía, solo recibo mis informes.
+      this.documentos = data;
+      this.currentPage = 1; 
+    },
+    error: (err) => console.error('Error de red al cargar informes', err)
+  });
+}
 
   eliminarDocumento(id: number): void {
     Swal.fire({
@@ -118,19 +126,18 @@ export class DocumentoComponent implements OnInit {
   }
 
   get filteredDocumentos(): Documento[] {
-    const q = this.searchTerm.toLowerCase();
-    if (!q) return this.documentos;
-    
-    return this.documentos.filter(doc => 
-      (doc.nombresyapellidos?.toLowerCase().includes(q)) ||
-      (doc.dni?.includes(q)) ||
-      (doc.edad?.includes(q)) ||
-      (doc.nombreOficio?.toLowerCase().includes(q)) ||
-      (doc.tipoMuestra?.toLowerCase().includes(q)) ||
-      (doc.cualitativo?.toLowerCase().includes(q)) ||
-      (doc.cuantitativo?.toLowerCase().includes(q))
-    );
-  }
+  const q = this.searchTerm.toLowerCase().trim();
+  // Si no hay búsqueda, devolvemos la lista completa que envió el server
+  if (!q) return this.documentos; 
+  
+  return this.documentos.filter(doc => 
+    // Usamos (val || '') para que el includes no falle con nulls
+    (doc.nombresyapellidos || '').toLowerCase().includes(q) ||
+    (doc.dni || '').includes(q) ||
+    (doc.nombreOficio || '').toLowerCase().includes(q) ||
+    (doc.id?.toString() === q) // Búsqueda exacta por ID
+  );
+}
 
   get paginatedDocumentos(): Documento[] {
     const startIndex = (this.currentPage - 1) * this.pageSize;

@@ -10,6 +10,7 @@ import { DocumentoService } from '../../../services/documento.service';
 import { EmpleadoDTO } from '../../../models/empleado.model';
 import { EmpleadoService } from '../../../services/Empleado.service';
 import { AuthService } from '../../../services/auth.service';
+import Swal from 'sweetalert2';
 
 declare const DocsAPI: any;
 
@@ -69,8 +70,9 @@ export class AsignacionDosajeRegistroComponent implements OnInit, OnDestroy {
       documentoId: [null, Validators.required],
       empleadoId: [null, Validators.required]
     });
-
-    this.cargarListas();
+  
+    this.gestionarPermisosCampos();
+    this.cargarListas();  
 
     // Detectar Modo Edición
     this.route.params.subscribe(params => {
@@ -108,6 +110,15 @@ export class AsignacionDosajeRegistroComponent implements OnInit, OnDestroy {
     });
   }
 
+  gestionarPermisosCampos() {
+    const controlCuantitativo = this.asignacionForm.get('cualitativo');
+    
+    if (this.puedeEditarResultadoCuantitativo()) {
+        controlCuantitativo?.enable(); // Desbloquea para Químico y Admin
+    } else {
+        controlCuantitativo?.disable(); // Bloquea para Auxiliar Dosaje y otros
+    }
+}
   cargarListas() {
     this.documentoService.getDocumentos().subscribe({
         next: (data) => {
@@ -253,61 +264,77 @@ export class AsignacionDosajeRegistroComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (this.asignacionForm.valid) {
-      const formValue = this.asignacionForm.getRawValue();
-      const currentUser = this.authService.getCurrentUser();
-      
-      const dto = {
-        ...formValue,
-        emisorId: currentUser?.empleadoId
-      };
+  if (this.asignacionForm.valid) {
+    const formValue = this.asignacionForm.getRawValue();
+    const currentUser = this.authService.getCurrentUser();
+    
+    const dto = {
+      ...formValue,
+      emisorId: currentUser?.empleadoId
+    };
 
-      // 1. Guardamos la Asignación en la Base de Datos (SQL)
-      const req$ = this.editMode && dto.id
-        ? this.dosajeService.actualizar(dto.id, dto)
-        : this.dosajeService.crear(dto);
+    // 1. Guardamos la Asignación
+    const req$ = this.editMode && dto.id
+      ? this.dosajeService.actualizar(dto.id, dto)
+      : this.dosajeService.crear(dto);
 
-      req$.subscribe({
-        next: (savedAsignacion) => {
-          console.log('✅ Asignación guardada en BD');
+    req$.subscribe({
+      next: (savedAsignacion) => {
+        console.log('✅ Asignación guardada en BD');
 
-          // 2. LÓGICA PARA ACTUALIZAR EL WORD
-          // Obtenemos el ID del documento y el valor que escribió el usuario
-          const documentoId = formValue.documentoId;
-          const valorCuantitativo = formValue.cualitativo; // Ojo: tu formControl se llama 'cualitativo'
+        const documentoId = formValue.documentoId;
+        const valorCuantitativo = formValue.cualitativo;
 
-          // Solo intentamos actualizar el Word si hay un documento y un valor numérico ingresado
-          if (documentoId && valorCuantitativo !== null && valorCuantitativo !== '') {
-            
-            console.log(`📝 Actualizando Tag 'CUANTITATIVO' en Word ID: ${documentoId} con valor: ${valorCuantitativo}`);
+        // 2. Actualizar el Word si es necesario
+        if (documentoId && valorCuantitativo !== null && valorCuantitativo !== '') {
+          
+          this.documentoService.actualizarTagWord(documentoId, 'CUANTITATIVO', valorCuantitativo.toString())
+            .subscribe({
+              next: () => {
+                console.log('✅ Word actualizado correctamente.');
+                
+                // --- CAMBIO AQUÍ: NO NAVEGAR, SOLO REFRESCAR ---
+                this.refrescarVistaDespuesDeGuardar(documentoId);
+                
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Registro Actualizado',
+                  text: 'Los datos y el documento se han sincronizado correctamente.',
+                  timer: 2000,
+                  showConfirmButton: false
+                });
+              },
+              error: (err) => {
+                console.error('❌ Error al actualizar el Word:', err);
+                Swal.fire('Atención', 'Se guardó en BD pero no se pudo actualizar el Word.', 'warning');
+              }
+            });
 
-            this.documentoService.actualizarTagWord(documentoId, 'CUANTITATIVO', valorCuantitativo.toString())
-              .subscribe({
-                next: () => {
-                  console.log('✅ Word actualizado correctamente.');
-                  // Navegamos una vez que todo terminó
-                  this.router.navigate(['/dashboard/asignaciones-dosaje']);
-                },
-                error: (err) => {
-                  console.error('❌ Error al actualizar el Word:', err);
-                  // Navegamos igual, pero podrías mostrar una alerta si prefieres
-                  alert('La asignación se guardó, pero hubo un error actualizando el archivo Word.');
-                  this.router.navigate(['/dashboard/asignaciones-dosaje']);
-                }
-              });
-
-          } else {
-            // Si no había valor para actualizar en el Word, simplemente navegamos
-            this.router.navigate(['/dashboard/asignaciones-dosaje']);
-          }
-        },
-        error: (err: any) => {
-          console.error('Error guardando asignación', err);
-          alert('❌ Error al guardar la asignación en la base de datos.');
+        } else {
+          // Si no hay tag que actualizar, solo avisamos del éxito
+          Swal.fire('Éxito', 'Registro guardado correctamente', 'success');
         }
-      });
-    }
+      },
+      error: (err: any) => {
+        Swal.fire('Error', 'No se pudo guardar en la base de datos.', 'error');
+      }
+    });
   }
+}
+
+// 3. NUEVO MÉTODO: Para limpiar y volver a cargar el visor sin salir de la página
+refrescarVistaDespuesDeGuardar(documentoId: number) {
+  // Destruimos el editor actual para forzar la carga de la nueva versión del archivo
+  if (this.docEditor) {
+    this.docEditor.destroyEditor();
+    this.docEditor = null;
+  }
+  
+  // Pequeño delay para asegurar que el servidor procesó el archivo antes de pedirlo de nuevo
+  setTimeout(() => {
+    this.cargarVisor(documentoId);
+  }, 500);
+}
 
   cancelar(): void {
     this.router.navigate(['/dashboard/asignaciones-dosaje']);

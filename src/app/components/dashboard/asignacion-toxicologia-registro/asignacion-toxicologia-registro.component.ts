@@ -119,40 +119,49 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
   }
 
   cargarDatosParaModales() {
-    this.documentoService.getDocumentos().subscribe(data => {
-      this.documentos = data.filter(doc =>
-        (doc.nombreDocumento || '').toLowerCase().includes('informe pericial de toxicologia') ||
-        (doc.nombreDocumento || '').toLowerCase().includes('informe pericial de toxicología')
-      );
-      this.documentosFiltrados = [...this.documentos];
-      this.aplicarFiltroYOrden();
+  this.documentoService.getDocumentos().subscribe(data => {
+    // Filtramos de forma más inteligente
+    this.documentos = data.filter(doc => {
+      // 1. Si el backend envió nombresyapellidos, es un documento válido
+      if (doc.nombresyapellidos && doc.nombresyapellidos !== 'Nombres') return true;
+
+      // 2. Si el nombre del documento contiene "toxicologia" (por si acaso)
+      const nombreDoc = (doc.nombreDocumento || '').toLowerCase();
+      if (nombreDoc.includes('toxicologia') || nombreDoc.includes('tox')) return true;
+
+      // 3. Si no tiene datos aún (es nuevo), también mostrarlo para poder asignarlo
+      if (!doc.nombresyapellidos || doc.nombresyapellidos === 'Nombres') return true;
+
+      return false;
     });
 
-    this.empleadoService.getAll().subscribe(data => {
-      this.empleados = data.filter(e => {
-        const cargoLower = e.cargo.toLowerCase();
-        return (
-          cargoLower.includes('quimico farmaceutico') ||
-          cargoLower.includes('químico farmacéutico')
-        );
-      });
-      this.empleadosFiltrados = this.empleados;
-    });
+    this.documentosFiltrados = [...this.documentos];
+    this.aplicarFiltroYOrden();
+  });
 
-    this.asignacionToxService.listar().subscribe(asignaciones => {
-      this.documentosAsignados = asignaciones.map(a => a.documentoId!);
+  // El resto del código de empleados se mantiene igual...
+  this.empleadoService.getAll().subscribe(data => {
+    this.empleados = data.filter(e => {
+      const cargoLower = e.cargo.toLowerCase();
+      return (cargoLower.includes('quimico') || cargoLower.includes('químico'));
     });
-  }
+    this.empleadosFiltrados = this.empleados;
+  });
+
+  this.asignacionToxService.listar().subscribe(asignaciones => {
+    this.documentosAsignados = asignaciones.map(a => a.documentoId!);
+  });
+}
 
   cargarAsignacionParaEditar(id: number) {
     this.asignacionToxService.obtenerPorId(id).subscribe({
-      next: (data) => {
+        next: (data) => {
         this.asignacionForm.patchValue(data);
 
         if (data.documentoId) {
           this.documentoService.getDocumentoById(data.documentoId).subscribe({
             next: (doc) => {
-              //this.documentoSeleccionadoInfo = `ID ${doc.id} - Oficio ${doc.nroOficio}`;
+              this.documentoSeleccionadoInfo = `ID ${doc.id} - ${doc.nombresyapellidos || 'Sin nombre'}`;
             },
             error: (err) => {
               console.error('Error al cargar documento:', err);
@@ -237,10 +246,16 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
   }
 
   seleccionarDocumento(doc: Documento) {
+    // 1. Asignamos el ID al formulario para la persistencia en BD
     this.asignacionForm.get('documentoId')?.setValue(doc.id);
-    //this.documentoSeleccionadoInfo = `ID ${doc.id} - Oficio ${doc.nroOficio}`;
+
+    // 2. Asignamos solo el nombre del oficio a la variable de visualización
+    // Si el oficio es nulo o está vacío, mostramos un texto de aviso
+    this.documentoSeleccionadoInfo = doc.nombreOficio ? doc.nombreOficio : 'SIN NÚMERO DE OFICIO';
+
+    // 3. Cerramos el modal
     this.closeDocumentoModal();
-  }
+}
 
   seleccionarEmpleado(emp: EmpleadoDTO) {
     this.asignacionForm.get('empleadoId')?.setValue(emp.id);

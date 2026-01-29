@@ -57,14 +57,14 @@
             
             <div class="d-flex gap-2">
               <button (click)="editarOficio(oficio.id!)" 
-                      class="h-9 w-9 flex items-center justify-center bg-amber-50 text-amber-600 rounded-xl border border-amber-100 transition-all hover:bg-amber-600 hover:text-white"
-                      title="Editar datos">
-                <i class="bi bi-pencil-square"></i>
+                      class="bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white px-3 py-2 rounded-xl transition-all border border-blue-100 d-flex align-items-center gap-2">
+              <i class="bi bi-pencil-square"></i>
+              <span class="font-black tracking-widest uppercase text-[10px]">Editar</span>
               </button>
               <button (click)="abrirOnlyOffice(oficio.id!)" 
                       class="bg-cyan-50 hover:bg-cyan-600 text-cyan-600 hover:text-white px-3 py-1 rounded-xl transition-all border border-cyan-100 d-flex align-items-center gap-2">
                 <i class="bi bi-file-earmark-word-fill"></i>
-                <span class="font-black tracking-widest uppercase text-[9px]">Word</span>
+                <span class="font-black tracking-widest uppercase text-[10px]">Word</span>
               </button>
             </div>
           </div>

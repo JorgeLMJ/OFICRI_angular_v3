@@ -10,6 +10,7 @@ export interface LoginResponse {
   apellido: string;
   email: string;
   rol: string;
+  cargo: string;
   empleadoId: number | null;
 }
 
@@ -83,17 +84,21 @@ export class AuthService {
   }
 
   private saveUserToStorage(response: LoginResponse): void {
-    const { token, nombre, apellido, email, rol, empleadoId } = response;
+    const { token, nombre, apellido, email, rol,cargo, empleadoId } = response;
     localStorage.setItem('token', token);
     localStorage.setItem('userName', nombre);
     localStorage.setItem('userApellido', apellido);
     localStorage.setItem('userEmail', email);
     localStorage.setItem('userRol', rol);
+    localStorage.setItem('userCargo', cargo);
     localStorage.setItem('empleadoId', empleadoId?.toString() ?? 'null');
 
     const user: AuthUser = { token, nombre, apellido, email, rol, empleadoId };
     this.currentUserSubject.next(user);
   }
+  getUserCargo(): string {
+  return localStorage.getItem('userCargo') || '';
+}
 
   private loadUserFromStorage(): void {
     const token = this.getToken();
