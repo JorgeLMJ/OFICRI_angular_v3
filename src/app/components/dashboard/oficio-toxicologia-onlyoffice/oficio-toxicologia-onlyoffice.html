@@ -1,0 +1,49 @@
+<div class="d-flex flex-column bg-white shadow-sm" 
+     style="margin: -1.5rem; width: calc(100% + 3rem); height: 100vh;">
+
+  <div class="flex-grow-1 position-relative w-100 p-0 m-0 bg-white" style="overflow: hidden;">
+    <div *ngIf="!configReceived" class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center bg-white" style="z-index: 20;">
+      <div class="spinner-border text-primary mb-2" style="width: 2rem; height: 2rem;" role="status"></div>
+      <h6 class="text-secondary fw-bold small text-uppercase tracking-wider">Cargando...</h6>
+    </div>
+
+    <div id="contenedor_onlyoffice" #editorContainer class="w-100 h-100 d-block"></div>
+  </div>
+
+  <div class="bg-primary text-white px-3 d-flex justify-content-between align-items-center border-top border-primary-subtle shadow-lg" 
+       style="height: 40px; flex-shrink: 0; z-index: 30;">
+    
+    <div class="d-flex align-items-center text-truncate" style="flex: 1;">
+      <i class="bi bi-file-earmark-word-fill me-2" style="font-size: 0.9rem;"></i>
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center">
+        <span class="fw-bold tracking-tight" style="font-size: 0.75rem;">Editor Oficio</span>
+        <span class="mx-2 opacity-25 d-none d-sm-inline">|</span>
+        <small class="opacity-75 font-monospace d-none d-sm-inline" style="font-size: 0.65rem;">Edición</small>
+      </div>
+    </div>
+    
+    <div class="d-flex gap-2 justify-content-center" style="flex: 2;">
+        <button class="btn btn-sm btn-light text-primary fw-bold d-flex align-items-center gap-1 border-0 shadow-sm py-0 px-3 rounded-pill transition-all hover-scale" 
+                style="height: 28px;"
+                (click)="guardarDocumento()">
+            <i class="bi bi-floppy-fill" style="font-size: 0.75rem;"></i>
+            <span style="font-size: 0.65rem; letter-spacing: 0.3px;">GUARDAR</span>
+        </button>
+
+        <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 border-0 py-0 px-3 rounded-pill transition-all hover-bg-white" 
+                style="height: 28px;"
+                onclick="history.back()"> 
+            <i class="bi bi-arrow-left-circle" style="font-size: 0.75rem;"></i>
+            <span style="font-size: 0.65rem; letter-spacing: 0.3px;">REGRESAR</span>
+        </button>
+    </div>
+
+    <div style="flex: 1;" class="d-none d-md-block"></div>
+  </div>
+
+</div>
+
+<style>
+  .hover-scale:hover { transform: scale(1.03); filter: brightness(1.05); }
+  .hover-bg-white:hover { background-color: rgba(255,255,255,0.15) !important; }
+</style>

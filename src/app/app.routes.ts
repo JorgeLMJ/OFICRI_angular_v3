@@ -9,17 +9,20 @@ import { HomeComponent } from './components/dashboard/home/home.component';
 import { EmpleadosComponent } from './components/dashboard/empleados/empleados.component';
 import { UsuariosComponent } from './components/dashboard/usuarios/usuarios.component'; 
 import { DocumentoComponent } from './components/dashboard/documento/documento.component';
-/*import { DocumentoRegistroComponent } from './components/dashboard/documento-registro/documento-registro.component';*/
 import { AsignacionesDosajeComponent } from './components/dashboard/asignaciones-dosaje/asignaciones-dosaje.component';
 import { AsignacionDosajeRegistroComponent } from './components/dashboard/asignacion-dosaje-registro/asignacion-dosaje-registro.component';
 import { AsignacionesToxicologiaComponent } from './components/dashboard/asignaciones-toxicologia/asignaciones-toxicologia.component';
 import { AsignacionToxicologiaRegistroComponent } from './components/dashboard/asignacion-toxicologia-registro/asignacion-toxicologia-registro.component';
 import { OficioDosajeComponent } from './components/dashboard/oficio-dosaje/oficio-dosaje.component';
 import { OficioDosajeRegistroComponent } from './components/dashboard/oficio-dosaje-registro/oficio-dosaje-registro.component';
+import { OficioToxicologiaComponent } from './components/dashboard/oficio-toxicologia/oficio-toxicologia.component';
+import { OficioToxicologiaRegistroComponent } from './components/dashboard/oficio-toxicologia-registro/oficio-toxicologia-registro.component';
 import { ReportesComponent } from './components/dashboard/reportes/reportes.component';
 import { AuditoriaComponent } from './components/dashboard/auditoria/auditoria.component';
 import { OnlyofficeEditorComponent } from './components/dashboard/onlyoffice-editor/onlyoffice-editor.component';
 import { OficioDosajeOnlyofficeComponent } from './components/dashboard/oficio-dosaje-onlyoffice/oficio-dosaje-onlyoffice.component';
+import { OficioToxicologiaOnlyofficeComponent } from './components/dashboard/oficio-toxicologia-onlyoffice/oficio-toxicologia-onlyoffice.component';
+
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -35,8 +38,6 @@ export const routes: Routes = [
       { path: 'usuarios', component: UsuariosComponent },  
       { path: 'empleados', component: EmpleadosComponent },
       { path: 'documento', component: DocumentoComponent },
-      /*{ path: 'documento-registro', component: DocumentoRegistroComponent },
-      { path: 'documento/:id/editar', component: DocumentoRegistroComponent },*/
       { path: 'asignaciones-dosaje', component: AsignacionesDosajeComponent },
       { path: 'asignacion-dosaje-registro', component: AsignacionDosajeRegistroComponent },
       { path: 'asignacion-dosaje-registro/:id', component: AsignacionDosajeRegistroComponent },
@@ -46,11 +47,16 @@ export const routes: Routes = [
       { path: 'oficio-dosaje', component: OficioDosajeComponent },
       { path: 'oficio-dosaje-registro', component: OficioDosajeRegistroComponent },
       { path: 'oficio-dosaje-registro/:id', component: OficioDosajeRegistroComponent },
+      { path: 'oficio-toxicologia', component: OficioToxicologiaComponent },
+      { path: 'oficio-toxicologia-registro', component: OficioToxicologiaRegistroComponent },
+      { path: 'oficio-toxicologia-registro/:id', component: OficioToxicologiaRegistroComponent },
       { path: 'reportes', component: ReportesComponent },
       { path: 'onlyoffice-editor', component: OnlyofficeEditorComponent }, 
       { path: 'onlyoffice-editor/:id', component: OnlyofficeEditorComponent }, 
       { path: 'oficio-dosaje-onlyoffice', component: OficioDosajeOnlyofficeComponent }, 
-      { path: 'oficio-dosaje-onlyoffice/:id', component: OficioDosajeOnlyofficeComponent }, 
+      { path: 'oficio-dosaje-onlyoffice/:id', component: OficioDosajeOnlyofficeComponent },
+      { path: 'oficio-toxicologia-onlyoffice', component: OficioToxicologiaOnlyofficeComponent }, 
+      { path: 'oficio-toxicologia-onlyoffice/:id', component: OficioToxicologiaOnlyofficeComponent }, 
       { 
         path: 'notificaciones', 
         loadComponent: () => import('./components/dashboard/notificaciones/notificaciones.component').then(m => m.NotificacionesComponent) 

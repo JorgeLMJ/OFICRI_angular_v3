@@ -57,6 +57,17 @@ export class AsignacionDosajeRegistroComponent implements OnInit, OnDestroy {
     private authService: AuthService
   ) {}
 
+  private Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 2000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer)
+      toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+  });
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
     this.currentUserRole = user?.rol || '';
@@ -264,63 +275,56 @@ export class AsignacionDosajeRegistroComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-  if (this.asignacionForm.valid) {
-    const formValue = this.asignacionForm.getRawValue();
-    const currentUser = this.authService.getCurrentUser();
-    
-    const dto = {
-      ...formValue,
-      emisorId: currentUser?.empleadoId
-    };
+    if (this.asignacionForm.valid) {
+      const formValue = this.asignacionForm.getRawValue();
+      const currentUser = this.authService.getCurrentUser();
+      
+      const dto = {
+        ...formValue,
+        emisorId: currentUser?.empleadoId
+      };
 
-    // 1. Guardamos la Asignación
-    const req$ = this.editMode && dto.id
-      ? this.dosajeService.actualizar(dto.id, dto)
-      : this.dosajeService.crear(dto);
+      // 1. Guardamos la Asignación
+      const req$ = this.editMode && dto.id
+        ? this.dosajeService.actualizar(dto.id, dto)
+        : this.dosajeService.crear(dto);
 
-    req$.subscribe({
-      next: (savedAsignacion) => {
-        console.log('✅ Asignación guardada en BD');
+      req$.subscribe({
+        next: (savedAsignacion) => {
+          const documentoId = formValue.documentoId;
+          const valorCuantitativo = formValue.cualitativo;
 
-        const documentoId = formValue.documentoId;
-        const valorCuantitativo = formValue.cualitativo;
-
-        // 2. Actualizar el Word si es necesario
-        if (documentoId && valorCuantitativo !== null && valorCuantitativo !== '') {
-          
-          this.documentoService.actualizarTagWord(documentoId, 'CUANTITATIVO', valorCuantitativo.toString())
-            .subscribe({
-              next: () => {
-                console.log('✅ Word actualizado correctamente.');
-                
-                // --- CAMBIO AQUÍ: NO NAVEGAR, SOLO REFRESCAR ---
-                this.refrescarVistaDespuesDeGuardar(documentoId);
-                
-                Swal.fire({
-                  icon: 'success',
-                  title: 'Registro Actualizado',
-                  text: 'Los datos y el documento se han sincronizado correctamente.',
-                  timer: 2000,
-                  showConfirmButton: false
-                });
-              },
-              error: (err) => {
-                console.error('❌ Error al actualizar el Word:', err);
-                Swal.fire('Atención', 'Se guardó en BD pero no se pudo actualizar el Word.', 'warning');
-              }
-            });
-
-        } else {
-          // Si no hay tag que actualizar, solo avisamos del éxito
-          Swal.fire('Éxito', 'Registro guardado correctamente', 'success');
+          // 2. Actualizar el Word si existe valor cuantitativo
+          if (documentoId && valorCuantitativo !== null && valorCuantitativo !== '') {
+            this.documentoService.actualizarTagWord(documentoId, 'CUANTITATIVO', valorCuantitativo.toString())
+              .subscribe({
+                next: () => {
+                  this.finalizarYRedirigir('Registro y documento actualizados correctamente');
+                },
+                error: (err) => {
+                  console.error('❌ Error Word:', err);
+                  this.finalizarYRedirigir('Se guardó el registro, pero el Word no pudo actualizarse', 'warning');
+                }
+              });
+          } else {
+            this.finalizarYRedirigir('Registro guardado correctamente');
+          }
+        },
+        error: (err: any) => {
+          Swal.fire('Error', 'No se pudo guardar en la base de datos.', 'error');
         }
-      },
-      error: (err: any) => {
-        Swal.fire('Error', 'No se pudo guardar en la base de datos.', 'error');
-      }
-    });
+      });
+    }
   }
-}
+  private finalizarYRedirigir(mensaje: string, icono: 'success' | 'warning' = 'success') {
+    this.Toast.fire({
+      icon: icono,
+      title: mensaje
+    });
+
+    // Redirección inmediata a la lista de asignaciones
+    this.router.navigate(['/dashboard/asignaciones-dosaje']);
+  }
 
 // 3. NUEVO MÉTODO: Para limpiar y volver a cargar el visor sin salir de la página
 refrescarVistaDespuesDeGuardar(documentoId: number) {

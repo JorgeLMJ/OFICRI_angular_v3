@@ -1,103 +1,103 @@
   <div class="container-fluid p-0 d-flex flex-column" style="margin: -1.5rem; width: calc(100% + 3rem); height: calc(100vh - 80px); overflow: hidden;">
     <div class="row g-0 flex-grow-1 h-100">
       
-      <aside class="col-lg-4 col-md-5 bg-white border-end d-flex flex-column shadow-lg position-relative h-100" style="z-index: 10;">
-        <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center flex-shrink-0">
-          <h6 class="mb-0 fw-bold text-primary text-uppercase tracking-wider">
-            <i class="bi bi-pencil-square me-2"></i>
-            {{ editMode ? 'Actualizar Registro' : 'Nueva Asignación' }}
-          </h6>
-          <button (click)="cancelar()" class="btn-close scale-75 shadow-none border-0"></button>
+<aside class="col-lg-4 col-md-5 bg-white border-end d-flex flex-column shadow-lg position-relative h-100" style="z-index: 10;">
+  <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center flex-shrink-0">
+    <h6 class="mb-0 fw-bold text-primary text-uppercase tracking-wider">
+      <i class="bi bi-pencil-square me-2"></i>
+      {{ editMode ? 'Actualizar Registro' : 'Nueva Asignación' }}
+    </h6>
+    <button (click)="cancelar()" class="btn-close scale-75 shadow-none border-0"></button>
+  </div>
+
+  <div class="p-4 overflow-y-auto h-100">
+    <form [formGroup]="asignacionForm" (ngSubmit)="onSubmit()" novalidate>
+      
+      <div class="mb-3">
+        <label class="form-label small fw-bold text-secondary text-uppercase tracking-widest">Área Destino</label>
+        <input type="text" class="form-control bg-light border-slate-200 py-2.5 rounded-3 fw-bold text-slate-600 shadow-none" formControlName="area" readonly>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label small fw-bold text-secondary text-uppercase tracking-widest">Documento Base</label>
+        <div class="input-group shadow-sm rounded-3 overflow-hidden">
+          <input type="text" class="form-control border-slate-200 py-2.5 text-primary fw-bold" [value]="documentoSeleccionadoOficio" placeholder="Buscar informe..." readonly>
+          <button type="button" class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#documentoModal" [disabled]="!puedeSeleccionarEntidades()">
+            <i class="bi bi-search"></i>
+          </button>
         </div>
+      </div>
 
-        <div class="p-4 overflow-y-auto h-100">
-          <form [formGroup]="asignacionForm" (ngSubmit)="onSubmit()" novalidate>
-            <div class="mb-4">
-              <h6 class="text-secondary fw-bold border-bottom pb-2 mb-3 text-uppercase small">
-                <i class="bi bi-link-45deg me-2"></i>Referencias
-              </h6>
-              <div class="mb-3">
-                <label class="form-label small fw-bold text-secondary">ÁREA DESTINO</label>
-                <input type="text" class="form-control bg-light fw-bold" formControlName="area" readonly>
-              </div>
-              <div class="mb-3">
-                <label class="form-label small fw-bold text-secondary">DOCUMENTO BASE</label>
-                <div class="input-group shadow-sm">
-                  <input type="text" class="form-control text-primary fw-bold" [value]="documentoSeleccionadoOficio" placeholder="Buscar..." readonly>
-                  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#documentoModal" [disabled]="!puedeSeleccionarEntidades()">
-                    <i class="bi bi-search"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
+      <div class="mb-4">
+        <label class="form-label small fw-bold text-secondary text-uppercase tracking-widest d-block mb-2">Responsable Asignado</label>
+        <div class="input-group shadow-sm rounded-3 overflow-hidden">
+          <span class="input-group-text bg-white border-slate-200 ps-3"><i class="bi bi-person-circle text-primary"></i></span>
+          <input type="text" class="form-control border-0 border-top border-bottom py-2.5 fw-bold text-primary" [value]="empleadoSeleccionadoNombre" placeholder="Asignar perito..." readonly>
+          <button type="button" class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#empleadoModal" [disabled]="!puedeSeleccionarEntidades()">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </div>
 
-            <div class="mb-4">
-              <h6 class="text-secondary fw-bold border-bottom pb-2 mb-3 text-uppercase small">
-                <i class="bi bi-person-badge me-2"></i>Responsable Asignado
-              </h6>
-              <div class="input-group shadow-sm">
-                <span class="input-group-text bg-white"><i class="bi bi-person-circle text-primary"></i></span>
-                <input type="text" class="form-control fw-bold text-primary" [value]="empleadoSeleccionadoNombre" placeholder="Asignar perito..." readonly>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#empleadoModal" [disabled]="!puedeSeleccionarEntidades()">
-                  <i class="bi bi-search"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="mb-4">
-              <h6 class="text-secondary fw-bold border-bottom pb-2 mb-3 text-uppercase small">
-                <i class="bi bi-funnel me-2"></i>Laboratorio
-              </h6>
-              <div class="card bg-light border-0 p-3 mb-3" 
-                [ngClass]="{'opacity-75': !puedeEditarResultadoCuantitativo()}">
-                <label class="form-label small fw-bold mb-1" 
-                      [ngClass]="puedeEditarResultadoCuantitativo() ? 'text-primary' : 'text-secondary'">
-                    VALOR CUANTITATIVO 
-                    <i *ngIf="!puedeEditarResultadoCuantitativo()" class="bi bi-lock-fill ms-1"></i>
-                </label>
-                
-                <div class="input-group">
-                    <input type="number" 
-                          class="form-control form-control-lg border-0 fw-bold shadow-none" 
-                          [ngClass]="puedeEditarResultadoCuantitativo() ? 'bg-white' : 'bg-secondary-subtle text-muted'"
-                          formControlName="cualitativo" 
-                          placeholder="0.00" 
-                          step="0.01">
-                    <span class="input-group-text border-0 fw-bold" 
-                          [ngClass]="puedeEditarResultadoCuantitativo() ? 'bg-white text-primary' : 'bg-secondary-subtle text-secondary'">
-                        G/L
-                    </span>
-                </div>
+      <div class="mb-4">
+        <label class="form-label small fw-bold mb-2 text-uppercase tracking-widest d-flex align-items-center" 
+               [ngClass]="puedeEditarResultadoCuantitativo() ? 'text-primary' : 'text-secondary'">
+          Valor Cuantitativo 
+          <i *ngIf="!puedeEditarResultadoCuantitativo()" class="bi bi-lock-fill ms-2 small"></i>
+        </label>
+        
+        <div class="input-group shadow-sm rounded-3 overflow-hidden border"
+     [ngClass]="puedeEditarResultadoCuantitativo() ? 'border-primary-subtle' : 'border-slate-200'">
+    <input type="number" 
+           class="form-control form-control-sm border-0 fw-bold shadow-none py-2" 
+           [ngClass]="puedeEditarResultadoCuantitativo() ? 'bg-white text-primary' : 'bg-secondary-subtle text-muted'"
+           formControlName="cualitativo" 
+           placeholder="0.00" 
+           step="0.01">
+    <span class="input-group-text border-0 fw-black px-3 small" 
+           [ngClass]="puedeEditarResultadoCuantitativo() ? 'bg-primary text-white' : 'bg-secondary text-white opacity-50'">
+        G/L
+    </span>
 </div>
-              <div class="row g-2" *ngIf="puedeEditarEstadoCampo()">
-                <div class="col-6">
-                  <button type="button" class="btn w-100 fw-bold small text-uppercase py-2 shadow-sm"
-                          [ngClass]="asignacionForm.get('estado')?.value === 'EN_PROCESO' ? 'btn-warning text-white' : 'btn-outline-light text-secondary border'"
-                          (click)="asignacionForm.patchValue({ estado: 'EN_PROCESO' })">
-                    <i class="bi bi-clock-history me-1"></i> Proceso
-                  </button>
-                </div>
-                <div class="col-6">
-                  <button type="button" class="btn w-100 fw-bold small text-uppercase py-2 shadow-sm"
-                          [ngClass]="asignacionForm.get('estado')?.value === 'COMPLETADO' ? 'btn-success text-white' : 'btn-outline-light text-secondary border'"
-                          (click)="asignacionForm.patchValue({ estado: 'COMPLETADO' })">
-                    <i class="bi bi-check-circle-fill me-1"></i> Listo
-                  </button>
-                </div>
-              </div>
-            </div>
+      </div>
 
-            <div class="d-grid gap-2 pt-3 border-top pb-5 mb-5">
-              <button type="submit" class="btn btn-primary btn-lg shadow-sm" [disabled]="asignacionForm.invalid || cargandoVisor">
-  <span *ngIf="cargandoVisor" class="spinner-border spinner-border-sm me-2"></span>
-  <i *ngIf="!cargandoVisor" class="bi bi-cloud-arrow-up-fill me-2"></i> 
-  {{ editMode ? 'Actualizar' : 'Confirmar' }} Registro
-</button>
-              <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">Cancelar</button>
-            </div>
-          </form>
+   <div class="mb-4" *ngIf="puedeEditarEstadoCampo()">
+   
+    
+    <div class="row g-2 mb-3"> <div class="col-6">
+            <button type="button" class="btn w-100 fw-bold small text-uppercase py-2.5 rounded-3 shadow-sm transition-all"
+                    [ngClass]="asignacionForm.get('estado')?.value === 'EN_PROCESO' ? 'btn-warning text-white' : 'btn-outline-light text-secondary border-slate-200'"
+                    (click)="asignacionForm.patchValue({ estado: 'EN_PROCESO' })">
+                <i class="bi bi-clock-history me-1"></i> Proceso
+            </button>
         </div>
-      </aside>
+        <div class="col-6">
+            <button type="button" class="btn w-100 fw-bold small text-uppercase py-2.5 rounded-3 shadow-sm transition-all"
+                    [ngClass]="asignacionForm.get('estado')?.value === 'COMPLETADO' ? 'btn-success text-white' : 'btn-outline-light text-secondary border-slate-200'"
+                    (click)="asignacionForm.patchValue({ estado: 'COMPLETADO' })">
+                <i class="bi bi-check-circle-fill me-1"></i> Listo
+            </button>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2">
+        <button type="submit" 
+                class="btn btn-primary py-3 rounded-3 shadow-lg fw-bold text-uppercase small tracking-widest transition-all hover:-translate-y-0.5 active:scale-95" 
+                [disabled]="asignacionForm.invalid || cargandoVisor">
+            <span *ngIf="cargandoVisor" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!cargandoVisor" class="bi bi-cloud-arrow-up-fill me-2 fs-6"></i> 
+            {{ editMode ? 'Actualizar' : 'Confirmar' }} Registro
+        </button>
+        
+        <button type="button" class="btn btn-link text-slate-400 text-decoration-none fw-bold small text-uppercase tracking-tighter py-2" (click)="cancelar()">
+            Cancelar operación
+        </button>
+    </div>
+</div>
+
+    </form>
+  </div>
+</aside>
 
       <main class="col-lg-8 col-md-7 h-100 bg-secondary-subtle d-flex flex-column position-relative">
         <div class="bg-dark text-white p-2 d-flex justify-content-between align-items-center flex-shrink-0">

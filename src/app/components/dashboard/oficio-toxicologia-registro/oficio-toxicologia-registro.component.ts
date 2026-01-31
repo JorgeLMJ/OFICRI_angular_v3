@@ -3,21 +3,20 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { OficioDosajeService } from '../../../services/oficio-dosaje.service';
+import { OficioToxicologiaService } from '../../../services/oficio-toxicologia.service';
 import { Documento } from '../../../models/documento.model';
 import { DocumentoService } from '../../../services/documento.service';
-import { AuthService } from '../../../services/auth.service';
 import Swal from 'sweetalert2';
 
 declare const DocsAPI: any;
 
 @Component({
-  selector: 'app-oficio-dosaje-registro',
-  templateUrl: './oficio-dosaje-registro.component.html',
+  selector: 'app-oficio-toxicologia-registro',
+  templateUrl: './oficio-toxicologia-registro.component.html',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule, FormsModule]
 })
-export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
+export class OficioToxicologiaRegistroComponent implements OnInit, OnDestroy {
   oficioForm!: FormGroup;
   editMode = false;
   
@@ -39,9 +38,8 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    private oficioDosajeService: OficioDosajeService,
-    private documentoService: DocumentoService,
-    private authService: AuthService
+    private oficioToxicologiaService: OficioToxicologiaService,
+    private documentoService: DocumentoService
   ) {}
 
   ngOnInit(): void {
@@ -57,7 +55,7 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
       nro_oficio: ['', Validators.required],
       gradoPNP: ['', Validators.required],
       nombresyapellidosPNP: ['', Validators.required],
-      documentoId: [null, Validators.required] // Solo se guarda el ID del documento
+      documentoId: [null, Validators.required] // Solo mantenemos el ID del documento
     });
   }
 
@@ -67,7 +65,7 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
       this.documentosFiltrados = [...this.documentos];
     });
 
-    this.oficioDosajeService.getOficiosDosaje().subscribe(oficios => {
+    this.oficioToxicologiaService.getOficiosToxicologia().subscribe(oficios => {
       this.documentosAsignados = oficios
         .filter(o => o.documentoId !== null)
         .map(o => o.documentoId!);
@@ -91,7 +89,7 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
       const id = params['id'];
       if (id) {
         this.editMode = true;
-        this.oficioDosajeService.getOficioDosajeById(id).subscribe(oficio => {
+        this.oficioToxicologiaService.getOficioToxicologiaById(id).subscribe(oficio => {
           this.oficioForm.patchValue(oficio);
           if (oficio.documentoId) {
             this.documentoService.getDocumentoById(oficio.documentoId).subscribe(doc => {
@@ -155,7 +153,6 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
   }
 
   seleccionarDocumento(doc: Documento) {
-    // ✅ Ahora solo actualizamos el ID. La información del nombre se muestra en el input de arriba.
     this.oficioForm.patchValue({ 
       documentoId: doc.id
     });
@@ -167,15 +164,15 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
     if (this.oficioForm.valid) {
       Swal.fire({
         title: 'Procesando...',
-        text: 'Guardando registro de oficio...',
+        text: 'Estamos guardando los datos.',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
 
       const data = this.oficioForm.getRawValue();
       const req$ = this.editMode 
-        ? this.oficioDosajeService.updateOficioDosaje(data.id, data) 
-        : this.oficioDosajeService.createOficioDosaje(data);
+        ? this.oficioToxicologiaService.updateOficioToxicologia(data.id, data) 
+        : this.oficioToxicologiaService.createOficioToxicologia(data);
       
       req$.subscribe({
         next: () => {
@@ -184,21 +181,21 @@ export class OficioDosajeRegistroComponent implements OnInit, OnDestroy {
           Swal.fire({
             icon: 'success',
             title: '¡Guardado!',
-            text: 'El oficio ha sido registrado correctamente.',
+            text: 'El oficio ha sido procesado correctamente.',
             timer: 2000,
             showConfirmButton: false
           }).then(() => {
-            this.router.navigate(['/dashboard/oficio-dosaje']);
+            this.router.navigate(['/dashboard/oficio-toxicologia']);
           });
         },
         error: (e) => {
-          Swal.fire('Error', 'No se pudo completar el registro: ' + e.message, 'error');
+          Swal.fire('Error', 'No se pudo guardar: ' + e.message, 'error');
         }
       });
     }
   }
 
-  cancelar() { this.router.navigate(['/dashboard/oficio-dosaje']); }
+  cancelar() { this.router.navigate(['/dashboard/oficio-toxicologia']); }
 
   ngOnDestroy() { 
     if (this.docEditor) { try { this.docEditor.destroyEditor(); } catch(e) {} } 

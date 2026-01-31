@@ -1,6 +1,4 @@
-// src/app/components/dashboard/asignacion-toxicologia-registro/asignacion-toxicologia-registro.component.ts
-
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef,ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -53,9 +51,32 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
     private asignacionToxService: AsignacionToxicologiaService,
     private documentoService: DocumentoService,
     private empleadoService: EmpleadoService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cd: ChangeDetectorRef,
   ) {}
+private Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 2000,
+    timerProgressBar: true
+  });
+  get puedeEditarSustancias(): boolean {
+    return this.currentUserRole === 'Quimico Farmaceutico' || this.currentUserRole === 'Administrador';
+  }
 
+  // Solo el Químico o Admin pueden ver y usar el botón "Listo" (COMPLETADO)
+  get puedeFinalizarPericia(): boolean {
+    return this.currentUserRole === 'Quimico Farmaceutico' || this.currentUserRole === 'Administrador';
+  }
+
+  // El Auxiliar puede crear la asignación pero no finalizarla
+  puedeSeleccionarEntidades(): boolean {
+    if (['Auxiliar de Toxicologia', 'Administrador'].includes(this.currentUserRole)) {
+      return true;
+    }
+    return !this.editMode;
+  }
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
     this.currentUserRole = user?.rol || '';
@@ -97,15 +118,7 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
   return this.currentUserRole === 'Quimico Farmaceutico' || this.currentUserRole === 'Administrador';
 }
 
-  // ✅ MODIFICADO: lógica de selección de entidades
-  puedeSeleccionarEntidades(): boolean {
-    // Si es Auxiliar de Toxicologia o Administrador → siempre puede seleccionar (incluso en edición)
-    if (['Auxiliar de Toxicologia', 'Administrador'].includes(this.currentUserRole)) {
-      return true;
-    }
-    // Si es Quimico Farmaceutico → solo puede seleccionar en modo creación
-    return !this.editMode;
-  }
+
 
   ngAfterViewInit(): void {
     setTimeout(() => {
@@ -196,9 +209,19 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
     this.aplicarFiltroYOrden();
     this.documentoModal?.show();
   }
+  private limpiarBackdrop() {
+    const backdrops = document.getElementsByClassName('modal-backdrop');
+    while (backdrops.length > 0) {
+      backdrops[0].parentNode?.removeChild(backdrops[0]);
+    }
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+  }
 
   closeDocumentoModal() {
     this.documentoModal?.hide();
+    this.limpiarBackdrop();
   }
 
   openEmpleadoModal() {
@@ -234,7 +257,9 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
   }
 
   goToPageDocumentos(page: number) {
-    this.currentPageDocumentos = Math.min(Math.max(1, page), this.totalPagesDocumentos);
+    if (page >= 1 && page <= this.totalPagesDocumentos) {
+      this.currentPageDocumentos = page;
+    }
   }
 
   filtrarEmpleados() {
@@ -246,20 +271,26 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
   }
 
   seleccionarDocumento(doc: Documento) {
-    // 1. Asignamos el ID al formulario para la persistencia en BD
+    // 1. Asignar valores al formulario
     this.asignacionForm.get('documentoId')?.setValue(doc.id);
-
-    // 2. Asignamos solo el nombre del oficio a la variable de visualización
-    // Si el oficio es nulo o está vacío, mostramos un texto de aviso
     this.documentoSeleccionadoInfo = doc.nombreOficio ? doc.nombreOficio : 'SIN NÚMERO DE OFICIO';
-
-    // 3. Cerramos el modal
-    this.closeDocumentoModal();
+    this.cd.detectChanges();
+    this.documentoModal?.hide();
+    this.limpiarBackdrop()
+    const backdrops = document.getElementsByClassName('modal-backdrop');
+    while (backdrops.length > 0) {
+      backdrops[0].parentNode?.removeChild(backdrops[0]);
+    }
+    // Devolver el scroll al cuerpo de la página
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
 }
 
   seleccionarEmpleado(emp: EmpleadoDTO) {
     this.asignacionForm.get('empleadoId')?.setValue(emp.id);
     this.empleadoSeleccionadoNombre = `${emp.nombre} ${emp.apellido}`;
+    this.cd.detectChanges();
     this.closeEmpleadoModal();
   }
 
@@ -271,43 +302,45 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
       } else {
         control.setValue(valor);
       }
+      this.cd.detectChanges();
     }
   }
 
  onSubmit(): void {
-  if (this.asignacionForm.invalid) {
-    Swal.fire('Formulario inválido', 'Por favor, complete todos los campos.', 'warning');
-    return;
-  }
-
-  const formValue: AsignacionToxicologia = this.asignacionForm.getRawValue();
-  const currentUser = this.authService.getCurrentUser();
-  const dto = { ...formValue, emisorId: currentUser?.empleadoId };
-
-  const request$ = this.editMode
-    ? this.asignacionToxService.actualizar(this.currentId!, dto)
-    : this.asignacionToxService.crear(dto);
-
-  request$.subscribe({
-    next: (savedAsignacion) => {
-      Swal.fire({
-        icon: 'success',
-        title: '¡Éxito!',
-        text: 'Datos guardados en BD. Abriendo editor de Word...',
-        timer: 1500,
-        showConfirmButton: false
-      }).then(() => {
-        // ✅ Redirigir directamente al editor de OnlyOffice después de guardar
-        this.router.navigate(['/dashboard/onlyoffice-editor', formValue.documentoId]);
-      });
-    },
-    error: (err) => {
-      console.error('Error guardando asignación:', err);
-      Swal.fire('Error', 'No se pudo guardar la asignación.', 'error');
+    if (this.asignacionForm.invalid) {
+      Swal.fire('Formulario inválido', 'Por favor, complete todos los campos.', 'warning');
+      return;
     }
-  });
-}
 
+    const formValue: AsignacionToxicologia = this.asignacionForm.getRawValue();
+    const currentUser = this.authService.getCurrentUser();
+    const dto = { ...formValue, emisorId: currentUser?.empleadoId };
+
+    const request$ = this.editMode
+      ? this.asignacionToxService.actualizar(this.currentId!, dto)
+      : this.asignacionToxService.crear(dto);
+
+    request$.subscribe({
+      next: (savedAsignacion) => {
+        // ✅ Actualizar lista local de asignados para bloquear la fila en el modal
+        if (!this.editMode) {
+          this.documentosAsignados.push(formValue.documentoId!);
+        }
+
+        this.Toast.fire({
+          icon: 'success',
+          title: this.editMode ? 'Pericia actualizada' : 'Pericia guardada correctamente'
+        });
+
+        // ✅ Redirigir a la lista de asignaciones de toxicología
+        this.router.navigate(['/dashboard/asignaciones-toxicologia']);
+      },
+      error: (err) => {
+        console.error('Error guardando asignación:', err);
+        Swal.fire('Error', 'No se pudo guardar la asignación.', 'error');
+      }
+    });
+  }
   cancelar(): void {
     this.router.navigate(['/dashboard/asignaciones-toxicologia']);
   }

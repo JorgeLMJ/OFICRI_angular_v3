@@ -1,131 +1,102 @@
-<div class="container-fluid p-0 animate-in fade-in duration-700" 
-     style="height: calc(100vh - 65px); overflow: hidden; background-color: #f8fafc;">
-  
+<style>
+  /* 1. Anular el efecto blanco/gris de Bootstrap */
+  .btn-check:focus + .btn, .btn:focus, .btn:active, .btn:hover {
+    outline: none !important; box-shadow: none !important; color: inherit;
+  }
+  /* 2. Colores sólidos para Positivo */
+  .bg-rose-500, .bg-rose-500:hover, .bg-rose-500:active, .bg-rose-500:focus {
+    background-color: #f43f5e !important; border-color: #f43f5e !important; color: white !important; opacity: 1 !important;
+  }
+  /* 3. Colores sólidos para Negativo */
+  .bg-emerald-500, .bg-emerald-500:hover, .bg-emerald-500:active, .bg-emerald-500:focus {
+    background-color: #10b981 !important; border-color: #10b981 !important; color: white !important; opacity: 1 !important;
+  }
+  .btn-group .btn { transition: none !important; cursor: pointer !important; }
+  .modal { z-index: 1060 !important; }
+  .modal-backdrop { z-index: 1050 !important; }
+</style>
+
+<div class="container-fluid p-0 animate-in fade-in duration-700" style="min-height: calc(100vh - 65px); background-color: #f8fafc;">
   <div class="row g-0 h-100">
-    
-    <aside class="col-lg-4 col-md-5 bg-white border-end d-flex flex-column shadow-sm h-100" style="z-index: 10;">
-      <div class="p-4 border-bottom bg-white d-flex justify-content-between align-items-center flex-shrink-0">
+    <aside class="col-12 col-md-5 col-lg-4 bg-white border-end d-flex flex-column shadow-sm h-100" style="z-index: 10;">
+      <div class="p-3 p-md-4 border-bottom bg-white d-flex justify-content-between align-items-center flex-shrink-0">
         <div>
           <h5 class="mb-0 font-black text-primary text-uppercase tracking-tighter">
-            <i class="bi bi-beaker-fill me-2"></i>
-            {{ editMode ? 'Actualizar' : 'Nueva' }} Asignación
+            <i class="bi bi-beaker-fill me-2"></i>{{ editMode ? 'Actualizar' : 'Nueva' }} Asignación
           </h5>
-          <p class="text-slate-400 small mb-0 font-medium tracking-tight">Peritaje Toxicológico</p>
         </div>
         <button (click)="cancelar()" class="btn-close shadow-none opacity-50"></button>
       </div>
 
-      <div class="p-4 overflow-y-auto custom-scrollbar flex-grow-1 bg-slate-50/30">
+      <div class="p-3 p-md-4 overflow-y-auto custom-scrollbar flex-grow-1 bg-slate-50/30">
         <form [formGroup]="asignacionForm" (ngSubmit)="onSubmit()" novalidate>
-          
-          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 d-block">Referencias del Caso</label>
-            
-            <div class="mb-4">
-              <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 d-block">Área de Laboratorio</label>
-              <input type="text" class="form-control bg-slate-100 border-0 py-2.5 rounded-xl font-black text-slate-600 shadow-none" formControlName="area" readonly>
-            </div>
-
-           <div class="mb-2">
-  <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 d-block">Expediente Base</label>
-  <div class="input-group overflow-hidden rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-    <input type="text" 
-           class="form-control border-0 py-2.5 font-bold text-primary shadow-none bg-white" 
-           style="cursor: pointer;"
-           [value]="documentoSeleccionadoInfo" 
-           placeholder="Seleccione expediente..." 
-           readonly
-           (click)="puedeSeleccionarEntidades() ? openDocumentoModal() : null">
-    <button type="button" class="btn btn-primary px-3 border-0 active:scale-95" 
-            (click)="openDocumentoModal()" 
-            [disabled]="!puedeSeleccionarEntidades()">
-      <i class="bi bi-search"></i>
-    </button>
-  </div>
-</div>
+          <div class="px-1 mb-4">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 d-block">Área de Laboratorio</label>
+            <input type="text" class="form-control bg-white border-slate-200 py-2.5 rounded-xl font-black text-slate-600 shadow-sm" formControlName="area" readonly>
           </div>
 
-          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 d-block">Especialista Asignado</label>
-            <div class="input-group overflow-hidden rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-              <span class="input-group-text bg-slate-50 border-0 ps-3"><i class="bi bi-person-badge text-primary"></i></span>
-              <input type="text" 
-                     class="form-control border-0 py-2.5 font-bold text-slate-700 shadow-none bg-white" 
-                     style="cursor: pointer;"
-                     [value]="empleadoSeleccionadoNombre" 
-                     placeholder="Asignar Químico..." 
-                     readonly
-                     (click)="puedeSeleccionarEntidades() ? openEmpleadoModal() : null">
-              <button type="button" class="btn btn-primary px-3 border-0 active:scale-95" 
-                      (click)="openEmpleadoModal()" 
-                      [disabled]="!puedeSeleccionarEntidades()">
-                <i class="bi bi-person-plus-fill"></i>
+          <div class="px-1 mb-4">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 d-block">Expediente Base</label>
+            <div class="input-group overflow-hidden rounded-xl border border-slate-200 shadow-sm bg-white">
+              <input type="text" class="form-control border-0 py-2.5 font-bold text-primary bg-white" [value]="documentoSeleccionadoInfo" placeholder="Seleccione..." readonly>
+              <button type="button" class="btn btn-primary px-3 border-0" (click)="openDocumentoModal()"><i class="bi bi-search"></i></button>
+            </div>
+          </div>
+
+          <div class="px-1 mb-4">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 d-block">Responsable</label>
+            <div class="input-group overflow-hidden rounded-xl border border-slate-200 shadow-sm bg-white">
+              <input type="text" class="form-control border-0 py-2.5 font-bold text-slate-700 bg-white" [value]="empleadoSeleccionadoNombre" placeholder="Asignar..." readonly>
+              <button type="button" class="btn btn-primary px-3 border-0" (click)="openEmpleadoModal()"><i class="bi bi-person-plus-fill"></i></button>
+            </div>
+          </div>
+
+          <div class="px-1 mt-2 mb-4">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 d-block">Estado</label>
+            <div class="btn-group w-100 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white mb-3">
+              <input type="radio" class="btn-check" formControlName="estado" value="EN_PROCESO" id="est-proc">
+              <label class="btn btn-outline-warning border-0 font-black text-[10px] py-2.5" for="est-proc">Proceso</label>
+              
+              <input *ngIf="puedeFinalizarPericia" type="radio" class="btn-check" formControlName="estado" value="COMPLETADO" id="est-comp">
+              <label *ngIf="puedeFinalizarPericia" class="btn btn-outline-success border-0 font-black text-[10px] py-2.5" for="est-comp">Listo</label>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary py-3 rounded-xl font-black text-[10px] uppercase shadow-lg shadow-primary/20" [disabled]="asignacionForm.invalid">
+                <i class="bi bi-cloud-arrow-up-fill me-2 fs-6"></i> Guardar Pericia
               </button>
             </div>
-          </div>
-
-          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 d-block">Estado de la Muestra</label>
-            <div class="btn-group w-100 rounded-xl overflow-hidden border border-slate-200 shadow-sm" role="group">
-              <input type="radio" class="btn-check" formControlName="estado" value="EN_PROCESO" id="est-proc">
-              <label class="btn btn-outline-warning border-0 font-black text-[10px] py-2.5 uppercase tracking-widest" for="est-proc">Proceso</label>
-              
-              <input type="radio" class="btn-check" formControlName="estado" value="COMPLETADO" id="est-comp">
-              <label class="btn btn-outline-success border-0 font-black text-[10px] py-2.5 uppercase tracking-widest" 
-                     for="est-comp" 
-                     [class.disabled]="!puedeCompletar">Completar</label>
-            </div>
-          </div>
-
-          <div class="d-grid gap-3 pt-2 pb-5">
-            <button type="submit" class="btn btn-primary py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5 active:scale-95" [disabled]="asignacionForm.invalid">
-              <i class="bi bi-cloud-arrow-up-fill me-2 fs-6"></i> {{ editMode ? 'Actualizar' : 'Guardar' }} Pericia
-            </button>
-            <button type="button" class="btn btn-link text-slate-400 font-bold text-decoration-none text-[11px] uppercase tracking-widest" (click)="cancelar()">
-              Descartar cambios
-            </button>
           </div>
         </form>
       </div>
     </aside>
 
-    <main class="col-lg-8 col-md-7 h-100 bg-slate-100/50 d-flex flex-column">
-      <div class="px-4 px-lg-5 pb-5 py-0 overflow-y-auto h-100 custom-scrollbar">
-        
-        <div class="d-flex align-items-center border-bottom bg-slate-100 sticky-top shadow-sm" 
-             style="z-index: 20; height: 75px; margin: 0 -3rem; padding: 0 3rem;">
-          
-          <div class="bg-white rounded-2xl text-primary border border-slate-200 me-4 d-flex align-items-center justify-content-center shadow-sm" 
-               style="width: 48px; height: 48px;">
-            <i class="bi bi-droplet-half fs-4"></i>
-          </div>
-          <div class="lh-sm">
-            <h5 class="text-primary font-black uppercase tracking-tight mb-1" style="font-size: 18px;">Análisis de Sustancias</h5>
-            <p class="text-slate-500 mb-0 font-bold" style="font-size: 13px;">Configuración técnica de reactivos químicos</p>
-          </div>
+    <main class="col-12 col-md-7 col-lg-8 h-100 bg-slate-100/50 d-flex flex-column">
+      <div class="px-3 px-md-4 px-lg-5 pb-5 py-0 overflow-y-auto h-100 custom-scrollbar">
+        <div class="d-flex align-items-center border-bottom bg-slate-100 sticky-top py-3 py-md-4" style="z-index: 20;">
+          <h5 class="text-primary font-black uppercase mb-0">Análisis de Sustancias</h5>
         </div>
 
-        <div class="mt-4"></div>
-
-        <div class="row g-3" [formGroup]="$any(asignacionForm.get('resultados'))">
-          <div class="col-12 col-xl-6" *ngFor="let drug of ['marihuana', 'cocaina', 'benzodiacepinas', 'barbituricos', 'carbamatos', 'estricnina', 'cumarinas', 'organofosforados', 'misoprostol', 'piretrinas']">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white transition-all hover:shadow-md group border-start border-[5px] border-transparent"
+        <div class="row g-3 mt-3" [formGroup]="$any(asignacionForm.get('resultados'))">
+          <div class="col-12 col-sm-6" *ngFor="let drug of ['marihuana', 'cocaina', 'benzodiacepinas', 'barbituricos', 'carbamatos', 'estricnina', 'cumarinas', 'organofosforados', 'misoprostol', 'piretrinas']">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-[5px]"
                  [ngClass]="{
                    'border-rose-500': asignacionForm.get('resultados.' + drug)?.value === 'Positivo',
-                   'border-emerald-500': asignacionForm.get('resultados.' + drug)?.value === 'Negativo'
+                   'border-emerald-500': asignacionForm.get('resultados.' + drug)?.value === 'Negativo',
+                   'border-transparent': !asignacionForm.get('resultados.' + drug)?.value,
+                   'opacity-75': !puedeEditarSustancias
                  }">
-              
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <label class="font-black text-slate-700 text-xs uppercase tracking-tighter">{{ drug }}</label>
-                <div class="badge bg-slate-50 text-slate-400 font-black text-[8px] uppercase tracking-widest px-2 py-1 rounded">Muestra A-1</div>
+                <label class="font-black text-slate-700 text-[10px] uppercase">{{ drug }}</label>
               </div>
-              
-              <div class="btn-group w-100 gap-2" role="group">
-                <button type="button" class="btn py-2 rounded-xl font-black text-[9px] uppercase border-2 transition-all"
-                        [ngClass]="asignacionForm.get('resultados.' + drug)?.value === 'Positivo' ? 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-100' : 'bg-white border-slate-100 text-slate-400'"
+              <div class="btn-group w-100 gap-2">
+                <button type="button" class="btn py-2 rounded-xl font-black text-[9px] border-2 shadow-none"
+                        [disabled]="!puedeEditarSustancias"
+                        [ngClass]="asignacionForm.get('resultados.' + drug)?.value === 'Positivo' ? 'bg-rose-500 border-rose-500 text-white' : 'bg-white border-slate-100 text-slate-400'"
                         (click)="toggleResultado(drug, 'Positivo')">Positivo</button>
-                <button type="button" class="btn py-2 rounded-xl font-black text-[9px] uppercase border-2 transition-all"
-                        [ngClass]="asignacionForm.get('resultados.' + drug)?.value === 'Negativo' ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-100' : 'bg-white border-slate-100 text-slate-400'"
+                <button type="button" class="btn py-2 rounded-xl font-black text-[9px] border-2 shadow-none"
+                        [disabled]="!puedeEditarSustancias"
+                        [ngClass]="asignacionForm.get('resultados.' + drug)?.value === 'Negativo' ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-100 text-slate-400'"
                         (click)="toggleResultado(drug, 'Negativo')">Negativo</button>
               </div>
             </div>
@@ -136,69 +107,43 @@
   </div>
 </div>
 
-<div class="modal fade" #documentoModal id="documentoModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" #documentoModal id="documentoModal" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content rounded-[2rem] border-0 shadow-2xl">
       <div class="modal-header border-0 p-4 pb-2">
-        <h5 class="font-black text-primary uppercase tracking-tighter mb-0">Seleccionar Expediente</h5>
+        <h5 class="font-black text-primary uppercase mb-0">Seleccionar Expediente</h5>
         <button type="button" class="btn-close shadow-none" (click)="closeDocumentoModal()"></button>
       </div>
       <div class="modal-body p-4">
-        <div class="input-group mb-4 rounded-2xl border p-1 bg-slate-50 focus-within:bg-white transition-all">
-          <span class="input-group-text border-0 bg-transparent ps-3"><i class="bi bi-search text-slate-400"></i></span>
-          <input type="text" class="form-control border-0 bg-transparent shadow-none font-medium text-sm" 
-                 placeholder="Buscar por involucrado, DNI o número..." 
-                 [(ngModel)]="terminoBusquedaDocumento" 
-                 (input)="aplicarFiltroYOrden()">
+        <div class="input-group mb-4 rounded-2xl border p-1 bg-slate-50">
+          <input type="text" class="form-control border-0 bg-transparent shadow-none" placeholder="Buscar..." [(ngModel)]="terminoBusquedaDocumento" (input)="aplicarFiltroYOrden()">
         </div>
-
         <div class="table-responsive rounded-3xl border border-slate-100 overflow-hidden">
           <table class="table table-hover align-middle mb-0">
             <thead class="bg-slate-50">
               <tr>
-                <th class="text-[10px] font-black uppercase text-slate-400 ps-4 py-3">ID</th>
-                <th class="text-[10px] font-black uppercase text-slate-400 py-3">Involucrado / Oficio</th>
-                <th class="text-end pe-4 py-3"></th>
+                <th class="text-[10px] font-black uppercase text-slate-400 ps-4">ID</th>
+                <th class="text-[10px] font-black uppercase text-slate-400">Involucrado</th>
+                <th class="text-end pe-4">Acción</th>
               </tr>
             </thead>
             <tbody>
-  <tr *ngFor="let doc of paginatedDocumentos" 
-      class="cursor-pointer transition-colors hover:bg-blue-50/50" 
-      (click)="seleccionarDocumento(doc)" 
-      style="cursor: pointer;">
-    <td class="ps-4 font-bold text-slate-400">#{{ doc.id }}</td>
-    <td>
-      <div class="font-black text-slate-700 leading-tight">
-        {{ (doc.nombresyapellidos === 'Nombres' || !doc.nombresyapellidos) ? 'EXPEDIENTE NUEVO (SIN DATOS)' : doc.nombresyapellidos }}
-      </div>
-      <div class="text-[10px] text-primary font-bold uppercase tracking-tighter mt-1">
-        {{ doc.nombreOficio || 'Sin número de oficio' }}
-      </div>
-    </td>
-    <td class="text-end pe-4">
-      <span class="p-2 bg-slate-100 rounded-xl text-slate-400 group-hover:bg-primary group-hover:text-white transition-all">
-        <i class="bi bi-plus-lg"></i>
-      </span>
-    </td>
-  </tr>
-  <tr *ngIf="documentosFiltrados.length === 0">
-    <td colspan="3" class="text-center py-5 text-slate-400 font-bold italic">
-      No hay documentos disponibles para asignar.
-    </td>
-  </tr>
-</tbody>
+              <tr *ngFor="let doc of paginatedDocumentos">
+                <td class="ps-4 font-bold text-slate-400">#{{ doc.id }}</td>
+                <td class="font-black text-slate-700">{{ doc.nombresyapellidos }}</td>
+                <td class="text-end pe-4">
+                  <button *ngIf="!isDocumentoAsignado(doc.id!)" type="button" class="btn btn-sm btn-primary rounded-xl px-3 font-black text-[9px] uppercase" (click)="seleccionarDocumento(doc)">Seleccionar</button>
+                  <span *ngIf="isDocumentoAsignado(doc.id!)" class="badge bg-warning-subtle text-warning border px-3 py-2 rounded-xl font-black text-[9px] uppercase"><i class="bi bi-lock-fill me-1"></i> Asignado</span>
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
-
         <div class="d-flex justify-content-between align-items-center mt-4 px-2" *ngIf="totalPagesDocumentos > 1">
-          <p class="text-[10px] font-black text-slate-400 uppercase mb-0">Página {{currentPageDocumentos}} de {{totalPagesDocumentos}}</p>
+          <small class="text-[10px] font-black text-slate-400 uppercase">Página {{currentPageDocumentos}} de {{totalPagesDocumentos}}</small>
           <div class="btn-group gap-1">
-            <button class="btn btn-sm btn-light rounded-lg border-0" (click)="goToPageDocumentos(currentPageDocumentos - 1)" [disabled]="currentPageDocumentos === 1">
-              <i class="bi bi-chevron-left"></i>
-            </button>
-            <button class="btn btn-sm btn-light rounded-lg border-0" (click)="goToPageDocumentos(currentPageDocumentos + 1)" [disabled]="currentPageDocumentos === totalPagesDocumentos">
-              <i class="bi bi-chevron-right"></i>
-            </button>
+            <button class="btn btn-sm btn-light" (click)="goToPageDocumentos(currentPageDocumentos - 1)" [disabled]="currentPageDocumentos === 1"><i class="bi bi-chevron-left text-primary"></i></button>
+            <button class="btn btn-sm btn-light" (click)="goToPageDocumentos(currentPageDocumentos + 1)" [disabled]="currentPageDocumentos === totalPagesDocumentos"><i class="bi bi-chevron-right text-primary"></i></button>
           </div>
         </div>
       </div>
@@ -206,37 +151,21 @@
   </div>
 </div>
 
-<div class="modal fade" #empleadoModal id="empleadoModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" #empleadoModal id="empleadoModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-[2rem] border-0 shadow-2xl">
       <div class="modal-header border-0 p-4 pb-2">
-        <h5 class="font-black text-primary uppercase tracking-tighter mb-0">Asignar Especialista</h5>
+        <h5 class="font-black text-primary uppercase mb-0">Asignar Especialista</h5>
         <button type="button" class="btn-close shadow-none" (click)="closeEmpleadoModal()"></button>
       </div>
       <div class="modal-body p-4">
-        <div class="input-group mb-4 rounded-2xl border p-1 bg-slate-50 focus-within:bg-white transition-all">
-          <span class="input-group-text border-0 bg-transparent ps-3"><i class="bi bi-search text-slate-400"></i></span>
-          <input type="text" class="form-control border-0 bg-transparent shadow-none font-medium text-sm" 
-                 placeholder="Buscar por nombre o DNI..." 
-                 [(ngModel)]="terminoBusquedaEmpleado" 
-                 (input)="filtrarEmpleados()">
-        </div>
-
-        <div class="list-group list-group-flush gap-2">
-          <button *ngFor="let emp of empleadosFiltrados" 
-                  type="button" 
-                  class="list-group-item list-group-item-action rounded-2xl border-0 bg-slate-50 hover:bg-blue-50 transition-all p-3 d-flex align-items-center justify-content-between mb-2 shadow-sm"
-                  (click)="seleccionarEmpleado(emp)">
-            <div class="d-flex align-items-center">
-              <div class="h-10 w-10 bg-white rounded-xl d-flex align-items-center justify-content-center text-primary border border-slate-100 me-3">
-                <i class="bi bi-person-fill"></i>
-              </div>
-              <div>
-                <div class="font-black text-slate-700 leading-none mb-1">{{emp.nombre}} {{emp.apellido}}</div>
-                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{emp.cargo}}</div>
-              </div>
+        <div class="list-group gap-2">
+          <button *ngFor="let emp of empleadosFiltrados" type="button" class="list-group-item list-group-item-action rounded-2xl border-0 bg-slate-50 p-3 d-flex align-items-center justify-content-between mb-2 shadow-sm" (click)="seleccionarEmpleado(emp)">
+            <div>
+              <div class="font-black text-slate-700 leading-none mb-1">{{emp.nombre}} {{emp.apellido}}</div>
+              <div class="text-[10px] text-slate-400 font-bold uppercase">{{emp.cargo}}</div>
             </div>
-            <i class="bi bi-plus-circle-fill text-primary fs-5"></i>
+            <i class="bi bi-plus-circle-fill text-primary"></i>
           </button>
         </div>
       </div>

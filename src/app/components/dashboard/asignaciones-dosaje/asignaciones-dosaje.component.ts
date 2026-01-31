@@ -10,18 +10,16 @@ import { EmpleadoDTO } from '../../../models/empleado.model';
 import { EmpleadoService } from '../../../services/Empleado.service';
 import { AuthService } from '../../../services/auth.service';
 import Swal from 'sweetalert2';
-import * as bootstrap from 'bootstrap'; // 👈 Agregado
-import jsPDF from 'jspdf'; // 👈 Agregado
-import html2canvas from 'html2canvas'; // 👈 Agregado
-import { SafeUrlPipe } from '../../../pipes/safe-url.pipe'; // 👈 Agregado
+import * as bootstrap from 'bootstrap';
+
 
 @Component({
   selector: 'app-asignaciones-dosaje',
   templateUrl: './asignaciones-dosaje.component.html',
   standalone: true,
-  imports: [CommonModule, FormsModule] // 👈 Agregado SafeUrlPipe
+  imports: [CommonModule, FormsModule] 
 })
-export class AsignacionesDosajeComponent implements OnInit, AfterViewInit, OnDestroy { // 👈 Implementa hooks
+export class AsignacionesDosajeComponent implements OnInit, AfterViewInit, OnDestroy {
   asignaciones: AsignacionDosaje[] = [];
   searchTerm = '';
   asignacionesFiltradas: AsignacionDosaje[] = [];
