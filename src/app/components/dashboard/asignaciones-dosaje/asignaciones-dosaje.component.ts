@@ -41,7 +41,6 @@ export class AsignacionesDosajeComponent implements OnInit, AfterViewInit, OnDes
 
   constructor(
     private dosajeService: DosajeService,
-    private documentoService: DocumentoService,
     private empleadoService: EmpleadoService,
     private router: Router,
     private authService: AuthService

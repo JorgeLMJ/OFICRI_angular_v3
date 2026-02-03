@@ -10,22 +10,20 @@ import { EmpleadoDTO } from '../../../models/empleado.model';
 import { EmpleadoService } from '../../../services/Empleado.service';
 import { AuthService } from '../../../services/auth.service';
 import Swal from 'sweetalert2';
-import * as bootstrap from 'bootstrap'; // 👈 Agregado
-import jsPDF from 'jspdf'; // 👈 Agregado
-import html2canvas from 'html2canvas'; // 👈 Agregado
-import { SafeUrlPipe } from '../../../pipes/safe-url.pipe'; // 👈 Agregado
+import * as bootstrap from 'bootstrap';
 
 @Component({
   selector: 'app-asignaciones-toxicologia',
   templateUrl: './asignaciones-toxicologia.component.html',
   standalone: true,
-  imports: [CommonModule, FormsModule] // 👈 Agregado SafeUrlPipe
+  imports: [CommonModule, FormsModule] 
 })
-export class AsignacionesToxicologiaComponent implements OnInit, AfterViewInit, OnDestroy { // 👈 Implementa AfterViewInit, OnDestroy
+export class AsignacionesToxicologiaComponent implements OnInit, AfterViewInit, OnDestroy {
   asignaciones: AsignacionToxicologia[] = [];
   asignacionesFiltradas: AsignacionToxicologia[] = [];
   searchTerm: string = '';
   empleadosMap: Map<number, EmpleadoDTO> = new Map();
+  currentUserRole: string = '';
 
   // 📄 Paginación
   currentPage = 1;
@@ -46,7 +44,11 @@ export class AsignacionesToxicologiaComponent implements OnInit, AfterViewInit, 
     private router: Router
   ) {}
 
+
   ngOnInit(): void {
+    const user = this.authService.getCurrentUser();
+    this.currentUserRole = user?.rol || '';
+    //this.loadAsignaciones();
     this.cargarAsignaciones();
   }
   abrirOnlyOffice(documentoId: number): void {
@@ -74,29 +76,25 @@ export class AsignacionesToxicologiaComponent implements OnInit, AfterViewInit, 
     }
   }
 
-  cargarAsignaciones(): void {
-    this.asignacionToxService.listar().subscribe({
-      next: (data) => {
-        const currentUser = this.authService.getCurrentUser();
-        const userRole = currentUser?.rol || '';
-        let asignacionesFiltradas = data;
-        if (userRole === 'Auxiliar de Toxicologia') {
-          asignacionesFiltradas = data.filter(a =>
-            a.area?.toLowerCase().includes('toxicología') ||
-            a.area?.toLowerCase().includes('toxicologia')
-          );
-        }
-        this.asignaciones = asignacionesFiltradas.sort((a, b) =>
-          (b.id || 0) - (a.id || 0)
-        );
-        this.asignacionesFiltradas = [...this.asignaciones];
-        this.goToPage(1);
-        this.cargarEmpleados(asignacionesFiltradas);
-      },
-      error: (err) => Swal.fire('Error', 'No se pudieron cargar las asignaciones de toxicología', 'error')
-    });
-  }
-
+ cargarAsignaciones(): void {
+  this.asignacionToxService.listar().subscribe({
+    next: (data) => {
+      // ✅ El Backend ya nos envía la lista filtrada "bajo llave".
+      // Aquí solo ordenamos estéticamente por ID descendente.
+      this.asignaciones = data.sort((a, b) => (b.id || 0) - (a.id || 0));
+      
+      this.asignacionesFiltradas = [...this.asignaciones];
+      
+      // Resetear a la primera página y cargar el mapa de nombres
+      this.goToPage(1);
+      this.cargarEmpleados(data);
+    },
+    error: (err) => {
+      console.error('Error al obtener asignaciones:', err);
+      Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+    }
+  });
+}
   private cargarEmpleados(asignaciones: AsignacionToxicologia[]): void {
     const empleadoIds = [...new Set(asignaciones.map(a => a.empleadoId))].filter(id => id !== undefined) as number[];
     if (empleadoIds.length > 0) {

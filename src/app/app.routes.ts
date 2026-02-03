@@ -18,7 +18,6 @@ import { OficioDosajeRegistroComponent } from './components/dashboard/oficio-dos
 import { OficioToxicologiaComponent } from './components/dashboard/oficio-toxicologia/oficio-toxicologia.component';
 import { OficioToxicologiaRegistroComponent } from './components/dashboard/oficio-toxicologia-registro/oficio-toxicologia-registro.component';
 import { ReportesComponent } from './components/dashboard/reportes/reportes.component';
-import { AuditoriaComponent } from './components/dashboard/auditoria/auditoria.component';
 import { OnlyofficeEditorComponent } from './components/dashboard/onlyoffice-editor/onlyoffice-editor.component';
 import { OficioDosajeOnlyofficeComponent } from './components/dashboard/oficio-dosaje-onlyoffice/oficio-dosaje-onlyoffice.component';
 import { OficioToxicologiaOnlyofficeComponent } from './components/dashboard/oficio-toxicologia-onlyoffice/oficio-toxicologia-onlyoffice.component';
@@ -35,36 +34,109 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     children: [
       { path: '', component: HomeComponent },
-      { path: 'usuarios', component: UsuariosComponent },  
-      { path: 'empleados', component: EmpleadosComponent },
-      { path: 'documento', component: DocumentoComponent },
-      { path: 'asignaciones-dosaje', component: AsignacionesDosajeComponent },
-      { path: 'asignacion-dosaje-registro', component: AsignacionDosajeRegistroComponent },
-      { path: 'asignacion-dosaje-registro/:id', component: AsignacionDosajeRegistroComponent },
-      { path: 'asignaciones-toxicologia', component: AsignacionesToxicologiaComponent },
-      { path: 'asignacion-toxicologia-registro', component: AsignacionToxicologiaRegistroComponent },
-      { path: 'asignacion-toxicologia-registro/:id', component: AsignacionToxicologiaRegistroComponent },
-      { path: 'oficio-dosaje', component: OficioDosajeComponent },
-      { path: 'oficio-dosaje-registro', component: OficioDosajeRegistroComponent },
-      { path: 'oficio-dosaje-registro/:id', component: OficioDosajeRegistroComponent },
-      { path: 'oficio-toxicologia', component: OficioToxicologiaComponent },
-      { path: 'oficio-toxicologia-registro', component: OficioToxicologiaRegistroComponent },
-      { path: 'oficio-toxicologia-registro/:id', component: OficioToxicologiaRegistroComponent },
-      { path: 'reportes', component: ReportesComponent },
-      { path: 'onlyoffice-editor', component: OnlyofficeEditorComponent }, 
-      { path: 'onlyoffice-editor/:id', component: OnlyofficeEditorComponent }, 
-      { path: 'oficio-dosaje-onlyoffice', component: OficioDosajeOnlyofficeComponent }, 
-      { path: 'oficio-dosaje-onlyoffice/:id', component: OficioDosajeOnlyofficeComponent },
-      { path: 'oficio-toxicologia-onlyoffice', component: OficioToxicologiaOnlyofficeComponent }, 
-      { path: 'oficio-toxicologia-onlyoffice/:id', component: OficioToxicologiaOnlyofficeComponent }, 
+      
+      // 👑 SÓLO ADMINISTRADOR
+      { path: 'usuarios', component: UsuariosComponent, data: { roles: ['Administrador'] } },   
+      { path: 'empleados', component: EmpleadosComponent, data: { roles: ['Administrador'] } },
+      { 
+        path: 'auditoria', 
+        loadComponent: () => import('./components/dashboard/auditoria/auditoria.component').then(m => m.AuditoriaComponent),
+        data: { roles: ['Administrador'] }
+      },
+
+      // 📝 INFORMES (Auxiliares y Admin)
+      { 
+        path: 'documento', 
+        component: DocumentoComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia'] } 
+      },
+      { 
+        path: 'onlyoffice-editor/:id', 
+        component: OnlyofficeEditorComponent,
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia'] } 
+      },
+
+      // 🍷 MÓDULO DOSAJE (Bloqueado para Auxiliar Toxicología y Químico)
+      { 
+        path: 'asignaciones-dosaje', 
+        component: AsignacionesDosajeComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje', 'Quimico Farmaceutico'] } 
+      },
+      { 
+        path: 'asignacion-dosaje-registro', 
+        component: AsignacionDosajeRegistroComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje'] } 
+      },
+      { 
+        path: 'asignacion-dosaje-registro/:id', 
+        component: AsignacionDosajeRegistroComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje', 'Quimico Farmaceutico'] } 
+      },
+      { 
+        path: 'oficio-dosaje', 
+        component: OficioDosajeComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje'] } // 🚩 Químico eliminado
+      },
+      { 
+        path: 'oficio-dosaje-registro', 
+        component: OficioDosajeRegistroComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje'] } 
+      },
+      { 
+        path: 'oficio-dosaje-registro/:id', 
+        component: OficioDosajeRegistroComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje'] } 
+      },
+      { 
+        path: 'oficio-dosaje-onlyoffice/:id', 
+        component: OficioDosajeOnlyofficeComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje'] } // 🚩 Químico eliminado
+      },
+
+      // 🧪 MÓDULO TOXICOLOGÍA (Bloqueado para Auxiliar Dosaje y Químico)
+      { 
+        path: 'asignaciones-toxicologia', 
+        component: AsignacionesToxicologiaComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Toxicologia', 'Quimico Farmaceutico'] } 
+      },
+      { 
+        path: 'asignacion-toxicologia-registro', 
+        component: AsignacionToxicologiaRegistroComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Toxicologia'] } 
+      },
+      { 
+        path: 'asignacion-toxicologia-registro/:id', 
+        component: AsignacionToxicologiaRegistroComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Toxicologia', 'Quimico Farmaceutico'] } 
+      },
+      { 
+        path: 'oficio-toxicologia', 
+        component: OficioToxicologiaComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Toxicologia'] } // 🚩 Químico eliminado
+      },
+      { 
+        path: 'oficio-toxicologia-registro', 
+        component: OficioToxicologiaRegistroComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Toxicologia'] } 
+      },
+      { 
+        path: 'oficio-toxicologia-registro/:id', 
+        component: OficioToxicologiaRegistroComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Toxicologia'] } 
+      },
+      { 
+        path: 'oficio-toxicologia-onlyoffice/:id', 
+        component: OficioToxicologiaOnlyofficeComponent, 
+        data: { roles: ['Administrador', 'Auxiliar de Toxicologia'] } // 🚩 Químico eliminado
+      },
+
+      // 📊 REPORTES Y NOTIFICACIONES
+      { path: 'reportes', component: ReportesComponent, data: { roles: ['Administrador', 'Quimico Farmaceutico'] } },
       { 
         path: 'notificaciones', 
-        loadComponent: () => import('./components/dashboard/notificaciones/notificaciones.component').then(m => m.NotificacionesComponent) 
-      },
-    { 
-      path: 'auditoria', 
-      loadComponent: () => import('./components/dashboard/auditoria/auditoria.component').then(m => m.AuditoriaComponent) 
-    }
+        loadComponent: () => import('./components/dashboard/notificaciones/notificaciones.component').then(m => m.NotificacionesComponent),
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia', 'Quimico Farmaceutico'] }
+      }
     ]
   },
   { path: '**', redirectTo: '/login' }

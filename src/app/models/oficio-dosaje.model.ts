@@ -5,7 +5,6 @@ export interface OficioDosaje {
   gradoPNP: string;
   nombresyapellidosPNP: string;
   documentoId?: number;
-  nro_informe_referencia: string; 
   archivo?: Blob | File | null;
 
   personaInvolucrada?: string;
@@ -13,6 +12,6 @@ export interface OficioDosaje {
   edadInvolucrado?: string;
   tipoMuestra?: string;
   NumeroInforme?: string;
-  
+  nombre_oficio_base?: string; 
 }
 

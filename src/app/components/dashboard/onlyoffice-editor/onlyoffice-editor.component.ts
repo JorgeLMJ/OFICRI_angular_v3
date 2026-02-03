@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/co
 import { NgIf,CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DocumentoService } from '../../../services/documento.service';
-import { LayoutService } from '../../../services/layout.service'; // 👈 IMPORTANTE
+import { LayoutService } from '../../../services/layout.service'; 
 import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
 
@@ -12,7 +12,7 @@ declare const DocsAPI: any;
   selector: 'app-onlyoffice-editor',
   templateUrl: './onlyoffice-editor.component.html',
   standalone: true,
-  imports: [NgIf, CommonModule] // Añadido imports necesarios
+  imports: [NgIf, CommonModule]
 })
 export class OnlyofficeEditorComponent implements OnInit, OnDestroy {
   @ViewChild('editorContainer') editorContainer!: ElementRef;
@@ -149,7 +149,7 @@ export class OnlyofficeEditorComponent implements OnInit, OnDestroy {
         this.router.navigate(['/dashboard/documento'], { 
           queryParams: { updatedId: this.documentoId } 
         });
-      }, 1500);
+      }, 1000);
 
     } else {
       console.warn('El editor no estaba listo para guardar.');

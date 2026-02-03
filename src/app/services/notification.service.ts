@@ -35,4 +35,12 @@ export class NotificationService {
   countUnreadNotifications(): Observable<number> {
     return this.http.get<number>(`${this.baseUrl}/unread/count`);
   }
+
+  countUnreadByEmpleado(empleadoId: number): Observable<number> {
+  return this.http.get<number>(`${this.baseUrl}/unread-count/${empleadoId}`);
+}
+
+obtenerNotificacionesPorEmpleado(empleadoId: number): Observable<Notification[]> {
+  return this.http.get<Notification[]>(`${this.baseUrl}/empleado/${empleadoId}`);
+}
 }

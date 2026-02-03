@@ -49,7 +49,7 @@ export class DocumentoComponent implements OnInit {
 
   iniciarContadorActualizacion(id: number) {
     this.updatingDocId = id;
-    this.countdown = 7; 
+    this.countdown = 8; 
     const interval = setInterval(() => {
       this.countdown--;
       if (this.countdown <= 0) {
@@ -127,16 +127,16 @@ export class DocumentoComponent implements OnInit {
 
   get filteredDocumentos(): Documento[] {
   const q = this.searchTerm.toLowerCase().trim();
-  // Si no hay búsqueda, devolvemos la lista completa que envió el server
-  if (!q) return this.documentos; 
-  
-  return this.documentos.filter(doc => 
-    // Usamos (val || '') para que el includes no falle con nulls
-    (doc.nombresyapellidos || '').toLowerCase().includes(q) ||
-    (doc.dni || '').includes(q) ||
-    (doc.nombreOficio || '').toLowerCase().includes(q) ||
-    (doc.id?.toString() === q) // Búsqueda exacta por ID
-  );
+  let lista = this.documentos;
+  if (q) {
+    lista = lista.filter(doc => 
+      (doc.nombresyapellidos || '').toLowerCase().includes(q) ||
+      (doc.dni || '').includes(q) ||
+      (doc.nombreOficio || '').toLowerCase().includes(q) ||
+      (doc.id?.toString() === q)
+    );
+  }
+  return lista.sort((a, b) => (b.id || 0) - (a.id || 0));
 }
 
   get paginatedDocumentos(): Documento[] {

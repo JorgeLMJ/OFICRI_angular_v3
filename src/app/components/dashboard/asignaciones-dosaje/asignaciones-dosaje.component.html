@@ -1,7 +1,7 @@
 <div class="container mt-2 pb-5 animate-in fade-in duration-700">
   
   <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
-    <button *ngIf="currentUserRole !== 'Quimico Farmaceutico'" 
+    <button *ngIf="currentUserRole === 'Administrador' || currentUserRole === 'Auxiliar de Dosaje'" 
             class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-2xl shadow-lg shadow-emerald-200 transition-all flex items-center font-black text-xs uppercase tracking-widest active:scale-95 border-0" 
             (click)="nuevaAsignacion()">
       <i class="bi bi-plus-lg me-2 fs-6"></i> Nueva Asignación
@@ -38,10 +38,10 @@
 
   <main class="row g-4" *ngIf="asignacionesFiltradas.length > 0; else noData">
     <div class="col-12 col-md-6 col-xl-4" *ngFor="let asignacion of paginatedAsignaciones">
-      <article class="h-100 rounded-[2rem] border-0 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white overflow-hidden position-relative group"
+      <article class="h-100 rounded-[2rem] border-0 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white overflow-hidden position-relative group border-start border-[6px]"
                [ngClass]="{
-                 'border-start border-[6px] border-amber-500': asignacion.estado === 'EN_PROCESO',
-                 'border-start border-[6px] border-blue-600': asignacion.estado === 'COMPLETADO'
+                 'border-amber-500': asignacion.estado === 'EN_PROCESO',
+                 'border-blue-600': asignacion.estado === 'COMPLETADO'
                }">
         
         <div class="p-4">
@@ -64,7 +64,7 @@
             <div class="d-flex align-items-center mb-2">
               <i class="bi bi-person-fill text-blue-500 me-3"></i>
               <div class="overflow-hidden">
-                <p class="text-slate-400 font-black uppercase text-[9px] mb-0">Responsable Pericial</p>
+                <p class="text-slate-400 font-black uppercase text-[9px] mb-0">Responsable</p>
                 <p class="font-bold text-slate-700 text-xs mb-0 text-truncate">
                   {{ empleadosMap.get(asignacion.empleadoId!)?.nombre }} {{ empleadosMap.get(asignacion.empleadoId!)?.apellido }}
                 </p>
@@ -91,6 +91,30 @@
     </div>
   </main>
 
+  <footer class="mt-5 d-flex justify-content-center" *ngIf="asignacionesFiltradas.length > 0">
+    <nav class="bg-white p-2 rounded-2xl shadow-xl border border-slate-100">
+      <ul class="pagination mb-0 border-0 gap-1">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link border-0 rounded-xl w-10 h-10 d-flex align-items-center justify-center transition-all hover:bg-slate-100" (click)="prevPage()">
+            <i class="bi bi-chevron-left text-primary"></i>
+          </button>
+        </li>
+        <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage">
+          <button class="page-link border-0 rounded-xl w-10 h-10 d-flex align-items-center justify-center font-black transition-all" 
+                  [ngClass]="page === currentPage ? 'bg-primary text-white shadow-md shadow-primary/30' : 'text-slate-500 bg-transparent hover:bg-slate-50'" 
+                  (click)="goToPage(page)">
+            {{ page }}
+          </button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link border-0 rounded-xl w-10 h-10 d-flex align-items-center justify-center transition-all hover:bg-slate-100" (click)="nextPage()">
+            <i class="bi bi-chevron-right text-primary"></i>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </footer>
+
   <ng-template #noData>
     <div class="text-center py-5 mt-5">
       <i class="bi bi-clipboard-x display-1 text-slate-200"></i>
@@ -98,5 +122,4 @@
       <p class="text-slate-400">Si eres administrador, verifica que existan registros en la base de datos.</p>
     </div>
   </ng-template>
-
-  </div>
+</div>

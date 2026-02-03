@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { OficioDosaje } from '../../../models/oficio-dosaje.model';
 import { OficioDosajeService } from '../../../services/oficio-dosaje.service';
+import { AuthService } from '../../../services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -15,6 +16,7 @@ import Swal from 'sweetalert2';
 export class OficioDosajeComponent implements OnInit, OnDestroy {
   oficios: OficioDosaje[] = [];
   searchTerm = '';
+  currentUserRole: string = '';
 
   // Paginación
   currentPage = 1;
@@ -27,13 +29,14 @@ export class OficioDosajeComponent implements OnInit, OnDestroy {
   constructor(
     private oficioDosajeService: OficioDosajeService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    const user = this.authService.getCurrentUser();
+    this.currentUserRole = user?.rol || '';
     this.loadOficios();
-
-    // Escuchar si regresamos del editor con un ID para actualizar
     this.route.queryParams.subscribe(params => {
       const id = params['updatedId'];
       if (id) {

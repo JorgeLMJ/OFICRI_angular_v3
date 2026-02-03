@@ -1,38 +1,24 @@
 <style>
-  /* 1. Anular el efecto blanco/gris de Bootstrap */
-  .btn-check:focus + .btn, .btn:focus, .btn:active, .btn:hover {
-    outline: none !important; box-shadow: none !important; color: inherit;
-  }
-  /* 2. Colores sólidos para Positivo */
-  .bg-rose-500, .bg-rose-500:hover, .bg-rose-500:active, .bg-rose-500:focus {
-    background-color: #f43f5e !important; border-color: #f43f5e !important; color: white !important; opacity: 1 !important;
-  }
-  /* 3. Colores sólidos para Negativo */
-  .bg-emerald-500, .bg-emerald-500:hover, .bg-emerald-500:active, .bg-emerald-500:focus {
-    background-color: #10b981 !important; border-color: #10b981 !important; color: white !important; opacity: 1 !important;
-  }
-  .btn-group .btn { transition: none !important; cursor: pointer !important; }
-  .modal { z-index: 1060 !important; }
-  .modal-backdrop { z-index: 1050 !important; }
+  .btn-check:focus + .btn, .btn:focus, .btn:active, .btn:hover { outline: none !important; box-shadow: none !important; color: inherit; }
+  .bg-rose-500 { background-color: #f43f5e !important; color: white !important; }
+  .bg-emerald-500 { background-color: #10b981 !important; color: white !important; }
 </style>
 
 <div class="container-fluid p-0 animate-in fade-in duration-700" style="min-height: calc(100vh - 65px); background-color: #f8fafc;">
   <div class="row g-0 h-100">
     <aside class="col-12 col-md-5 col-lg-4 bg-white border-end d-flex flex-column shadow-sm h-100" style="z-index: 10;">
       <div class="p-3 p-md-4 border-bottom bg-white d-flex justify-content-between align-items-center flex-shrink-0">
-        <div>
-          <h5 class="mb-0 font-black text-primary text-uppercase tracking-tighter">
-            <i class="bi bi-beaker-fill me-2"></i>{{ editMode ? 'Actualizar' : 'Nueva' }} Asignación
-          </h5>
-        </div>
+        <h5 class="mb-0 font-black text-primary text-uppercase tracking-tighter">
+          <i class="bi bi-beaker-fill me-2"></i>{{ editMode ? 'Actualizar' : 'Nueva' }} Asignación
+        </h5>
         <button (click)="cancelar()" class="btn-close shadow-none opacity-50"></button>
       </div>
 
-      <div class="p-3 p-md-4 overflow-y-auto custom-scrollbar flex-grow-1 bg-slate-50/30">
+      <div class="p-3 p-md-4 overflow-y-auto custom-scrollbar flex-grow-1">
         <form [formGroup]="asignacionForm" (ngSubmit)="onSubmit()" novalidate>
           <div class="px-1 mb-4">
-            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 d-block">Área de Laboratorio</label>
-            <input type="text" class="form-control bg-white border-slate-200 py-2.5 rounded-xl font-black text-slate-600 shadow-sm" formControlName="area" readonly>
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 d-block">Área</label>
+            <input type="text" class="form-control bg-light border-slate-200 py-2.5 rounded-xl font-black text-slate-600" formControlName="area" readonly>
           </div>
 
           <div class="px-1 mb-4">
@@ -46,19 +32,18 @@
           <div class="px-1 mb-4">
             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 d-block">Responsable</label>
             <div class="input-group overflow-hidden rounded-xl border border-slate-200 shadow-sm bg-white">
-              <input type="text" class="form-control border-0 py-2.5 font-bold text-slate-700 bg-white" [value]="empleadoSeleccionadoNombre" placeholder="Asignar..." readonly>
+              <input type="text" class="form-control border-0 py-2.5 font-bold text-slate-700 bg-white" [value]="empleadoSeleccionadoNombre" placeholder="Asignar perito..." readonly>
               <button type="button" class="btn btn-primary px-3 border-0" (click)="openEmpleadoModal()"><i class="bi bi-person-plus-fill"></i></button>
             </div>
           </div>
 
           <div class="px-1 mt-2 mb-4">
-            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 d-block">Estado</label>
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 d-block">Estado de Pericia</label>
             <div class="btn-group w-100 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white mb-3">
               <input type="radio" class="btn-check" formControlName="estado" value="EN_PROCESO" id="est-proc">
-              <label class="btn btn-outline-warning border-0 font-black text-[10px] py-2.5" for="est-proc">Proceso</label>
-              
+              <label class="btn btn-outline-warning border-0 font-black text-[10px] py-2.5" for="est-proc">PROCESO</label>
               <input *ngIf="puedeFinalizarPericia" type="radio" class="btn-check" formControlName="estado" value="COMPLETADO" id="est-comp">
-              <label *ngIf="puedeFinalizarPericia" class="btn btn-outline-success border-0 font-black text-[10px] py-2.5" for="est-comp">Listo</label>
+              <label *ngIf="puedeFinalizarPericia" class="btn btn-outline-success border-0 font-black text-[10px] py-2.5" for="est-comp">LISTO</label>
             </div>
 
             <div class="d-grid gap-2">
@@ -83,8 +68,7 @@
                  [ngClass]="{
                    'border-rose-500': asignacionForm.get('resultados.' + drug)?.value === 'Positivo',
                    'border-emerald-500': asignacionForm.get('resultados.' + drug)?.value === 'Negativo',
-                   'border-transparent': !asignacionForm.get('resultados.' + drug)?.value,
-                   'opacity-75': !puedeEditarSustancias
+                   'border-transparent': !asignacionForm.get('resultados.' + drug)?.value
                  }">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <label class="font-black text-slate-700 text-[10px] uppercase">{{ drug }}</label>
@@ -107,43 +91,50 @@
   </div>
 </div>
 
-<div class="modal fade" #documentoModal id="documentoModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content rounded-[2rem] border-0 shadow-2xl">
-      <div class="modal-header border-0 p-4 pb-2">
-        <h5 class="font-black text-primary uppercase mb-0">Seleccionar Expediente</h5>
+<div class="modal fade" #documentoModal id="documentoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content rounded-[2rem] border-0 shadow-2xl overflow-hidden">
+      <div class="modal-header border-0 p-4 pb-2 bg-white">
+        <h5 class="font-black text-primary uppercase mb-0 tracking-tighter">Buscar Informe Pericial</h5>
         <button type="button" class="btn-close shadow-none" (click)="closeDocumentoModal()"></button>
       </div>
-      <div class="modal-body p-4">
-        <div class="input-group mb-4 rounded-2xl border p-1 bg-slate-50">
-          <input type="text" class="form-control border-0 bg-transparent shadow-none" placeholder="Buscar..." [(ngModel)]="terminoBusquedaDocumento" (input)="aplicarFiltroYOrden()">
+
+      <div class="modal-body p-4 bg-white">
+        <div class="input-group mb-4 rounded-2xl border p-1 bg-slate-50 shadow-sm">
+          <span class="input-group-text bg-transparent border-0 ps-3"><i class="bi bi-search text-slate-400"></i></span>
+          <input type="text" class="form-control border-0 bg-transparent shadow-none" placeholder="Buscar por N° oficio, involucrado o DNI..." 
+                 [(ngModel)]="terminoBusquedaDocumento" (input)="filtrarDocumentos()">
         </div>
-        <div class="table-responsive rounded-3xl border border-slate-100 overflow-hidden">
+        
+        <div class="table-responsive rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
           <table class="table table-hover align-middle mb-0">
             <thead class="bg-slate-50">
               <tr>
-                <th class="text-[10px] font-black uppercase text-slate-400 ps-4">ID</th>
-                <th class="text-[10px] font-black uppercase text-slate-400">Involucrado</th>
-                <th class="text-end pe-4">Acción</th>
+                <th class="text-[10px] font-black uppercase text-slate-400 ps-4 py-3">Involucrado</th>
+                <th class="text-[10px] font-black uppercase text-slate-400 py-3">DNI</th>
+                <th class="text-[10px] font-black uppercase text-slate-400 py-3">N° Oficio</th>
+                <th class="text-end pe-4 py-3">Acción</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let doc of paginatedDocumentos">
-                <td class="ps-4 font-bold text-slate-400">#{{ doc.id }}</td>
-                <td class="font-black text-slate-700">{{ doc.nombresyapellidos }}</td>
+                <td class="ps-4 font-black text-slate-700 uppercase">{{ doc.nombresyapellidos }}</td>
+                <td><span class="badge bg-slate-100 text-slate-500 border-0 rounded-lg px-2 py-1 font-bold text-[10px]">{{ doc.dni }}</span></td>
+                <td><div class="text-primary font-black text-xs">{{ doc.nombreOficio }}</div></td>
                 <td class="text-end pe-4">
-                  <button *ngIf="!isDocumentoAsignado(doc.id!)" type="button" class="btn btn-sm btn-primary rounded-xl px-3 font-black text-[9px] uppercase" (click)="seleccionarDocumento(doc)">Seleccionar</button>
-                  <span *ngIf="isDocumentoAsignado(doc.id!)" class="badge bg-warning-subtle text-warning border px-3 py-2 rounded-xl font-black text-[9px] uppercase"><i class="bi bi-lock-fill me-1"></i> Asignado</span>
+                  <button *ngIf="!isDocumentoAsignado(doc.id!)" type="button" class="btn btn-sm btn-primary rounded-xl px-4 font-black text-[9px] uppercase tracking-widest" (click)="seleccionarDocumento(doc)">Seleccionar</button>
+                  <span *ngIf="isDocumentoAsignado(doc.id!)" class="badge bg-warning-subtle text-warning border border-warning/20 px-3 py-2 rounded-xl font-black text-[9px] uppercase"><i class="bi bi-lock-fill me-1"></i> Asignado</span>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+
         <div class="d-flex justify-content-between align-items-center mt-4 px-2" *ngIf="totalPagesDocumentos > 1">
-          <small class="text-[10px] font-black text-slate-400 uppercase">Página {{currentPageDocumentos}} de {{totalPagesDocumentos}}</small>
+          <span class="badge bg-slate-100 text-slate-500 rounded-pill font-black text-[9px] px-3">PÁGINA {{ currentPageDocumentos }} DE {{ totalPagesDocumentos }}</span>
           <div class="btn-group gap-1">
-            <button class="btn btn-sm btn-light" (click)="goToPageDocumentos(currentPageDocumentos - 1)" [disabled]="currentPageDocumentos === 1"><i class="bi bi-chevron-left text-primary"></i></button>
-            <button class="btn btn-sm btn-light" (click)="goToPageDocumentos(currentPageDocumentos + 1)" [disabled]="currentPageDocumentos === totalPagesDocumentos"><i class="bi bi-chevron-right text-primary"></i></button>
+            <button class="btn btn-sm btn-light rounded-xl border-slate-200 px-3" (click)="goToPageDocumentos(currentPageDocumentos - 1)" [disabled]="currentPageDocumentos === 1"><i class="bi bi-chevron-left text-primary fw-bold"></i></button>
+            <button class="btn btn-sm btn-light rounded-xl border-slate-200 px-3" (click)="goToPageDocumentos(currentPageDocumentos + 1)" [disabled]="currentPageDocumentos === totalPagesDocumentos"><i class="bi bi-chevron-right text-primary fw-bold"></i></button>
           </div>
         </div>
       </div>
@@ -154,18 +145,18 @@
 <div class="modal fade" #empleadoModal id="empleadoModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content rounded-[2rem] border-0 shadow-2xl">
-      <div class="modal-header border-0 p-4 pb-2">
-        <h5 class="font-black text-primary uppercase mb-0">Asignar Especialista</h5>
+      <div class="modal-header border-0 p-4 pb-2 bg-white">
+        <h5 class="font-black text-primary uppercase mb-0 tracking-tighter">Asignar Especialista</h5>
         <button type="button" class="btn-close shadow-none" (click)="closeEmpleadoModal()"></button>
       </div>
-      <div class="modal-body p-4">
+      <div class="modal-body p-4 bg-white">
         <div class="list-group gap-2">
-          <button *ngFor="let emp of empleadosFiltrados" type="button" class="list-group-item list-group-item-action rounded-2xl border-0 bg-slate-50 p-3 d-flex align-items-center justify-content-between mb-2 shadow-sm" (click)="seleccionarEmpleado(emp)">
+          <button *ngFor="let emp of empleadosFiltrados" type="button" class="list-group-item list-group-item-action rounded-2xl border-0 bg-slate-50 p-3 d-flex align-items-center justify-content-between shadow-sm" (click)="seleccionarEmpleado(emp)">
             <div>
-              <div class="font-black text-slate-700 leading-none mb-1">{{emp.nombre}} {{emp.apellido}}</div>
+              <div class="font-black text-slate-700 text-uppercase">{{emp.nombre}} {{emp.apellido}}</div>
               <div class="text-[10px] text-slate-400 font-bold uppercase">{{emp.cargo}}</div>
             </div>
-            <i class="bi bi-plus-circle-fill text-primary"></i>
+            <i class="bi bi-plus-circle-fill text-primary fs-5"></i>
           </button>
         </div>
       </div>

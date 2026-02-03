@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef,ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -35,14 +35,21 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
   empleadosFiltrados: EmpleadoDTO[] = [];
 
   terminoBusquedaDocumento: string = '';
-  terminoBusquedaEmpleado: string = '';
   documentoSeleccionadoInfo: string = '';
   empleadoSeleccionadoNombre: string = '';
   documentosAsignados: number[] = [];
 
-  // ✅ PAGINACIÓN
+  // ✅ CONFIGURACIÓN DE PAGINACIÓN SOLICITADA
   currentPageDocumentos = 1;
   pageSizeDocumentos = 5;
+
+  private Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 2000,
+    timerProgressBar: true
+  });
 
   constructor(
     private fb: FormBuilder,
@@ -54,29 +61,7 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
     private authService: AuthService,
     private cd: ChangeDetectorRef,
   ) {}
-private Toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2000,
-    timerProgressBar: true
-  });
-  get puedeEditarSustancias(): boolean {
-    return this.currentUserRole === 'Quimico Farmaceutico' || this.currentUserRole === 'Administrador';
-  }
 
-  // Solo el Químico o Admin pueden ver y usar el botón "Listo" (COMPLETADO)
-  get puedeFinalizarPericia(): boolean {
-    return this.currentUserRole === 'Quimico Farmaceutico' || this.currentUserRole === 'Administrador';
-  }
-
-  // El Auxiliar puede crear la asignación pero no finalizarla
-  puedeSeleccionarEntidades(): boolean {
-    if (['Auxiliar de Toxicologia', 'Administrador'].includes(this.currentUserRole)) {
-      return true;
-    }
-    return !this.editMode;
-  }
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
     this.currentUserRole = user?.rol || '';
@@ -88,16 +73,9 @@ private Toast = Swal.mixin({
       empleadoId: [null, Validators.required],
       estado: ['EN_PROCESO', Validators.required],
       resultados: this.fb.group({
-        marihuana: [null],
-        cocaina: [null],
-        benzodiacepinas: [null],
-        barbituricos: [null],
-        carbamatos: [null],
-        estricnina: [null],
-        cumarinas: [null],
-        organofosforados: [null],
-        misoprostol: [null],
-        piretrinas: [null]
+        marihuana: [null], cocaina: [null], benzodiacepinas: [null], barbituricos: [null],
+        carbamatos: [null], estricnina: [null], cumarinas: [null], organofosforados: [null],
+        misoprostol: [null], piretrinas: [null]
       })
     });
 
@@ -113,140 +91,48 @@ private Toast = Swal.mixin({
     });
   }
 
-  // ✅ NUEVO: getter para saber si puede completar
-  get puedeCompletar(): boolean {
-  return this.currentUserRole === 'Quimico Farmaceutico' || this.currentUserRole === 'Administrador';
-}
-
-
-
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      if (this.documentoModalEl?.nativeElement) {
-        this.documentoModal = new Modal(this.documentoModalEl.nativeElement);
-      }
-      if (this.empleadoModalEl?.nativeElement) {
-        this.empleadoModal = new Modal(this.empleadoModalEl.nativeElement);
-      }
-    }, 0);
+    if (this.documentoModalEl?.nativeElement) {
+      this.documentoModal = new Modal(this.documentoModalEl.nativeElement);
+    }
+    if (this.empleadoModalEl?.nativeElement) {
+      this.empleadoModal = new Modal(this.empleadoModalEl.nativeElement);
+    }
   }
 
   cargarDatosParaModales() {
-  this.documentoService.getDocumentos().subscribe(data => {
-    // Filtramos de forma más inteligente
-    this.documentos = data.filter(doc => {
-      // 1. Si el backend envió nombresyapellidos, es un documento válido
-      if (doc.nombresyapellidos && doc.nombresyapellidos !== 'Nombres') return true;
-
-      // 2. Si el nombre del documento contiene "toxicologia" (por si acaso)
-      const nombreDoc = (doc.nombreDocumento || '').toLowerCase();
-      if (nombreDoc.includes('toxicologia') || nombreDoc.includes('tox')) return true;
-
-      // 3. Si no tiene datos aún (es nuevo), también mostrarlo para poder asignarlo
-      if (!doc.nombresyapellidos || doc.nombresyapellidos === 'Nombres') return true;
-
-      return false;
+    this.documentoService.getDocumentos().subscribe(data => {
+      this.documentos = data;
+      this.documentosFiltrados = [...this.documentos];
+      this.aplicarFiltroYOrden();
     });
 
-    this.documentosFiltrados = [...this.documentos];
-    this.aplicarFiltroYOrden();
-  });
-
-  // El resto del código de empleados se mantiene igual...
-  this.empleadoService.getAll().subscribe(data => {
-    this.empleados = data.filter(e => {
-      const cargoLower = e.cargo.toLowerCase();
-      return (cargoLower.includes('quimico') || cargoLower.includes('químico'));
+    this.empleadoService.getAll().subscribe(data => {
+      this.empleados = data.filter(e => e.cargo.toLowerCase().includes('quimico'));
+      this.empleadosFiltrados = this.empleados;
     });
-    this.empleadosFiltrados = this.empleados;
-  });
 
-  this.asignacionToxService.listar().subscribe(asignaciones => {
-    this.documentosAsignados = asignaciones.map(a => a.documentoId!);
-  });
-}
-
-  cargarAsignacionParaEditar(id: number) {
-    this.asignacionToxService.obtenerPorId(id).subscribe({
-        next: (data) => {
-        this.asignacionForm.patchValue(data);
-
-        if (data.documentoId) {
-          this.documentoService.getDocumentoById(data.documentoId).subscribe({
-            next: (doc) => {
-              this.documentoSeleccionadoInfo = `ID ${doc.id} - ${doc.nombresyapellidos || 'Sin nombre'}`;
-            },
-            error: (err) => {
-              console.error('Error al cargar documento:', err);
-              this.documentoSeleccionadoInfo = 'Error al cargar';
-            }
-          });
-        }
-
-        if (data.empleadoId) {
-          this.empleadoService.getById(data.empleadoId).subscribe({
-            next: (emp: EmpleadoDTO) => {
-              this.empleadoSeleccionadoNombre = `${emp.nombre} ${emp.apellido}`;
-            },
-            error: (err) => {
-              console.error('Error al cargar empleado:', err);
-              this.empleadoSeleccionadoNombre = 'Error al cargar empleado';
-            }
-          });
-        } else {
-          this.empleadoSeleccionadoNombre = '';
-        }
-      },
-      error: (err) => {
-        console.error('Error al cargar asignación:', err);
-        Swal.fire('Error', 'No se pudo cargar la asignación.', 'error');
-      }
+    this.asignacionToxService.listar().subscribe(asignaciones => {
+      this.documentosAsignados = asignaciones.map(a => a.documentoId!);
     });
   }
 
-  openDocumentoModal() {
+  // ✅ SOLUCIÓN AL ERROR NG9: Función de filtrado para el modal
+  filtrarDocumentos(): void {
+    const term = this.terminoBusquedaDocumento.toLowerCase().trim();
+    this.documentosFiltrados = this.documentos.filter(doc =>
+      (doc.nombreOficio?.toLowerCase().includes(term) || false) ||
+      (doc.nombresyapellidos?.toLowerCase().includes(term) || false) ||
+      (doc.dni?.includes(term) || false)
+    );
     this.currentPageDocumentos = 1;
-    this.aplicarFiltroYOrden();
-    this.documentoModal?.show();
   }
-  private limpiarBackdrop() {
-    const backdrops = document.getElementsByClassName('modal-backdrop');
-    while (backdrops.length > 0) {
-      backdrops[0].parentNode?.removeChild(backdrops[0]);
-    }
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
-  }
-
-  closeDocumentoModal() {
-    this.documentoModal?.hide();
-    this.limpiarBackdrop();
-  }
-
-  openEmpleadoModal() {
-    this.empleadoModal?.show();
-  }
-
-  closeEmpleadoModal() {
-    this.empleadoModal?.hide();
-  }
-
-  isDocumentoAsignado(documentoId: number): boolean {
-    if (this.editMode && this.asignacionForm.get('documentoId')?.value === documentoId) {
-      return false;
-    }
-    return this.documentosAsignados.includes(documentoId);
-  }
-
-
 
   aplicarFiltroYOrden() {
-    let filtrados = [...this.documentosFiltrados];
-    filtrados.sort((a, b) => (b.id || 0) - (a.id || 0));
-    this.documentosFiltrados = filtrados;
+    this.documentosFiltrados.sort((a, b) => (b.id || 0) - (a.id || 0));
   }
 
+  // ✅ GETTERS PARA LA PAGINACIÓN DE 5 ELEMENTOS
   get paginatedDocumentos() {
     const start = (this.currentPageDocumentos - 1) * this.pageSizeDocumentos;
     return this.documentosFiltrados.slice(start, start + this.pageSizeDocumentos);
@@ -262,94 +148,75 @@ private Toast = Swal.mixin({
     }
   }
 
-  filtrarEmpleados() {
-    const term = this.terminoBusquedaEmpleado.toLowerCase();
-    this.empleadosFiltrados = this.empleados.filter(emp =>
-      `${emp.nombre} ${emp.apellido}`.toLowerCase().includes(term) ||
-      emp.dni.toLowerCase().includes(term)
-    );
+  isDocumentoAsignado(documentoId: number): boolean {
+    if (this.editMode && this.asignacionForm.get('documentoId')?.value === documentoId) return false;
+    return this.documentosAsignados.includes(documentoId);
   }
 
   seleccionarDocumento(doc: Documento) {
-    // 1. Asignar valores al formulario
-    this.asignacionForm.get('documentoId')?.setValue(doc.id);
-    this.documentoSeleccionadoInfo = doc.nombreOficio ? doc.nombreOficio : 'SIN NÚMERO DE OFICIO';
+    this.asignacionForm.patchValue({ documentoId: doc.id });
+    this.documentoSeleccionadoInfo = doc.nombreOficio || doc.nombresyapellidos || 'Expediente Seleccionado';
     this.cd.detectChanges();
     this.documentoModal?.hide();
-    this.limpiarBackdrop()
-    const backdrops = document.getElementsByClassName('modal-backdrop');
-    while (backdrops.length > 0) {
-      backdrops[0].parentNode?.removeChild(backdrops[0]);
-    }
-    // Devolver el scroll al cuerpo de la página
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
-}
+  }
 
   seleccionarEmpleado(emp: EmpleadoDTO) {
-    this.asignacionForm.get('empleadoId')?.setValue(emp.id);
+    this.asignacionForm.patchValue({ empleadoId: emp.id });
     this.empleadoSeleccionadoNombre = `${emp.nombre} ${emp.apellido}`;
     this.cd.detectChanges();
-    this.closeEmpleadoModal();
+    this.empleadoModal?.hide();
+  }
+
+  openDocumentoModal() { this.documentoModal?.show(); }
+  openEmpleadoModal() { this.empleadoModal?.show(); }
+  closeDocumentoModal() { this.documentoModal?.hide(); }
+  closeEmpleadoModal() { this.empleadoModal?.hide(); }
+
+  get puedeEditarSustancias(): boolean {
+    return ['Quimico Farmaceutico', 'Administrador'].includes(this.currentUserRole);
+  }
+
+  get puedeFinalizarPericia(): boolean {
+    return ['Quimico Farmaceutico', 'Administrador'].includes(this.currentUserRole);
   }
 
   toggleResultado(campo: string, valor: string): void {
+    if (!this.puedeEditarSustancias) return;
     const control = this.asignacionForm.get(`resultados.${campo}`);
     if (control) {
-      if (control.value === valor) {
-        control.setValue(null);
-      } else {
-        control.setValue(valor);
-      }
-      this.cd.detectChanges();
+      control.setValue(control.value === valor ? null : valor);
     }
   }
 
- onSubmit(): void {
-    if (this.asignacionForm.invalid) {
-      Swal.fire('Formulario inválido', 'Por favor, complete todos los campos.', 'warning');
-      return;
-    }
+  onSubmit(): void {
+    if (this.asignacionForm.invalid) return;
+    const dto = { ...this.asignacionForm.getRawValue(), emisorId: this.authService.getCurrentUser()?.empleadoId };
+    const req$ = this.editMode ? this.asignacionToxService.actualizar(this.currentId!, dto) : this.asignacionToxService.crear(dto);
 
-    const formValue: AsignacionToxicologia = this.asignacionForm.getRawValue();
-    const currentUser = this.authService.getCurrentUser();
-    const dto = { ...formValue, emisorId: currentUser?.empleadoId };
-
-    const request$ = this.editMode
-      ? this.asignacionToxService.actualizar(this.currentId!, dto)
-      : this.asignacionToxService.crear(dto);
-
-    request$.subscribe({
-      next: (savedAsignacion) => {
-        // ✅ Actualizar lista local de asignados para bloquear la fila en el modal
-        if (!this.editMode) {
-          this.documentosAsignados.push(formValue.documentoId!);
-        }
-
-        this.Toast.fire({
-          icon: 'success',
-          title: this.editMode ? 'Pericia actualizada' : 'Pericia guardada correctamente'
-        });
-
-        // ✅ Redirigir a la lista de asignaciones de toxicología
+    req$.subscribe({
+      next: () => {
+        this.Toast.fire({ icon: 'success', title: 'Pericia guardada' });
         this.router.navigate(['/dashboard/asignaciones-toxicologia']);
       },
-      error: (err) => {
-        console.error('Error guardando asignación:', err);
-        Swal.fire('Error', 'No se pudo guardar la asignación.', 'error');
+      error: () => Swal.fire('Error', 'No se pudo guardar', 'error')
+    });
+  }
+
+  cargarAsignacionParaEditar(id: number) {
+    this.asignacionToxService.obtenerPorId(id).subscribe(data => {
+      this.asignacionForm.patchValue(data);
+      if (data.documentoId) {
+        this.documentoService.getDocumentoById(data.documentoId).subscribe(doc => {
+          this.documentoSeleccionadoInfo = doc.nombreOficio || doc.nombresyapellidos || '';
+        });
+      }
+      if (data.empleadoId) {
+        this.empleadoService.getById(data.empleadoId).subscribe(emp => {
+          this.empleadoSeleccionadoNombre = `${emp.nombre} ${emp.apellido}`;
+        });
       }
     });
   }
-  cancelar(): void {
-    this.router.navigate(['/dashboard/asignaciones-toxicologia']);
-  }
 
-  getPageNumbers(): number[] {
-    const pages = [];
-    for (let i = 1; i <= this.totalPagesDocumentos; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
+  cancelar() { this.router.navigate(['/dashboard/asignaciones-toxicologia']); }
 }

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { OficioToxicologia} from '../../../models/oficio-toxicologia.model';
 import { OficioToxicologiaService } from '../../../services/oficio-toxicologia.service';
+import { AuthService } from '../../../services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -15,7 +16,7 @@ import Swal from 'sweetalert2';
 export class OficioToxicologiaComponent implements OnInit, OnDestroy {
   oficios: OficioToxicologia[] = [];
   searchTerm = '';
-
+  currentUserRole: string = '';
   // Paginación
   currentPage = 1;
   pageSize = 6;
@@ -27,13 +28,14 @@ export class OficioToxicologiaComponent implements OnInit, OnDestroy {
   constructor(
     private oficioToxicologiaService: OficioToxicologiaService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    const user = this.authService.getCurrentUser();
+    this.currentUserRole = user?.rol || '';
     this.loadOficios();
-
-    // Escuchar si regresamos del editor con un ID para actualizar
     this.route.queryParams.subscribe(params => {
       const id = params['updatedId'];
       if (id) {

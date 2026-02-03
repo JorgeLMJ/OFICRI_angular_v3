@@ -1,7 +1,8 @@
 <div class="container mt-2 pb-5 animate-in fade-in duration-700">
   
   <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
-    <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-2xl shadow-lg shadow-emerald-200 transition-all flex items-center font-black text-xs uppercase tracking-widest active:scale-95 border-0" 
+    <button *ngIf="currentUserRole === 'Administrador' || currentUserRole === 'Auxiliar de Dosaje'" 
+            class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-2xl shadow-lg shadow-emerald-200 transition-all flex items-center font-black text-xs uppercase tracking-widest active:scale-95 border-0" 
             (click)="nuevoOficio()">
       <i class="bi bi-plus-lg me-2 fs-6"></i> Nuevo Oficio
     </button>
@@ -115,7 +116,7 @@
           </div>
 
           <div class="mt-4 pt-3 border-t border-slate-100 d-flex justify-content-between align-items-center">
-            <span class="text-slate-300 font-mono text-[9px]">Ref: {{ oficio.nro_informe_referencia }}</span>
+            <span class="text-slate-300 font-mono text-[9px]">Ref: {{ oficio.nombre_oficio_base }}</span>
             <span class="badge bg-emerald-500 text-white rounded-pill font-black px-3 py-1.5 text-[9px] shadow-sm tracking-widest">
               <i class="bi bi-patch-check-fill me-1"></i> VÁLIDO
             </span>
