@@ -3,24 +3,24 @@ FROM node:18 AS build
 
 WORKDIR /app
 
-# Copiar dependencias
-COPY package.json package-lock.json ./
+# Copiar dependencias y evitar errores de compatibilidad
+COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
-# Copiar código fuente y construir
+# Copiar código fuente y compilar
 COPY . .
-RUN npm run build --prod
+RUN npm run build --configuration=production
 
-# Etapa 2: Servir los archivos con nginx
+# Etapa 2: Servir con Nginx
 FROM nginx:alpine
 
-# Copiar archivos compilados al directorio raíz del servidor web
-COPY --from=build /app/dist/auth/browser /usr/share/nginx/html
+# ✅ CORREGIDO: Se usa 'web_tramites' que es el nombre real de tu proyecto
+# Se usa la ruta dist/web_tramites/browser que es el estándar de Angular 17+
+COPY --from=build /app/dist/web_tramites/browser /usr/share/nginx/html
 
-# Copiar configuración personalizada de nginx
+# Copiar tu configuración personalizada de Nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-# Exponer puerto
+
 EXPOSE 80
 
-# Mantener el servidor corriendo
 CMD ["nginx", "-g", "daemon off;"]

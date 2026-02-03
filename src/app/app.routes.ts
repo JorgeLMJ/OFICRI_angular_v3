@@ -32,6 +32,7 @@ export const routes: Routes = [
     path: 'dashboard', 
     component: DashboardComponent, 
     canActivate: [AuthGuard],
+    canActivateChild: [AuthGuard],
     children: [
       { path: '', component: HomeComponent },
       
@@ -75,7 +76,7 @@ export const routes: Routes = [
       { 
         path: 'oficio-dosaje', 
         component: OficioDosajeComponent, 
-        data: { roles: ['Administrador', 'Auxiliar de Dosaje'] } // 🚩 Químico eliminado
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje'] } 
       },
       { 
         path: 'oficio-dosaje-registro', 
@@ -90,9 +91,8 @@ export const routes: Routes = [
       { 
         path: 'oficio-dosaje-onlyoffice/:id', 
         component: OficioDosajeOnlyofficeComponent, 
-        data: { roles: ['Administrador', 'Auxiliar de Dosaje'] } // 🚩 Químico eliminado
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje'] } 
       },
-
       // 🧪 MÓDULO TOXICOLOGÍA (Bloqueado para Auxiliar Dosaje y Químico)
       { 
         path: 'asignaciones-toxicologia', 
@@ -112,7 +112,7 @@ export const routes: Routes = [
       { 
         path: 'oficio-toxicologia', 
         component: OficioToxicologiaComponent, 
-        data: { roles: ['Administrador', 'Auxiliar de Toxicologia'] } // 🚩 Químico eliminado
+        data: { roles: ['Administrador', 'Auxiliar de Toxicologia'] } 
       },
       { 
         path: 'oficio-toxicologia-registro', 
@@ -127,7 +127,7 @@ export const routes: Routes = [
       { 
         path: 'oficio-toxicologia-onlyoffice/:id', 
         component: OficioToxicologiaOnlyofficeComponent, 
-        data: { roles: ['Administrador', 'Auxiliar de Toxicologia'] } // 🚩 Químico eliminado
+        data: { roles: ['Administrador', 'Auxiliar de Toxicologia'] } 
       },
 
       // 📊 REPORTES Y NOTIFICACIONES
