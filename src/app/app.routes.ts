@@ -54,7 +54,7 @@ export const routes: Routes = [
       { 
         path: 'onlyoffice-editor/:id', 
         component: OnlyofficeEditorComponent,
-        data: { roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia'] } 
+        data: { roles: ['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia', 'Quimico Farmaceutico'] } 
       },
 
       // 🍷 MÓDULO DOSAJE (Bloqueado para Auxiliar Toxicología y Químico)

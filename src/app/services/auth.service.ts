@@ -151,7 +151,11 @@ export class AuthService {
   }
 
   forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/forgot-password`, { email }).pipe(
+    return this.http.post(
+      `${this.baseUrl}/forgot-password`, 
+      { email },
+      { responseType: 'text' }
+    ).pipe(
       catchError(this.handleError)
     );
   }
